@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Browse Jobs - AfgJobs</title>
+  <meta name="description" content="Find freelance and full-time jobs in Afghanistan. Filter by city, category, and job type.">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="canonical" href="https://afgjobs.com/jobs.html">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header" role="banner">
+    <div class="container nav-row">
+      <div class="brand">
+        <a href="index.html" class="brand-link" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <div class="brand-text">
+            <h1 class="site-title">AfgJobs</h1>
+            <p class="site-tagline">Fast local jobs for Afghans</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link active" aria-current="page">Jobs</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="post-job.html" class="nav-link cta">Post Job</a>
+      </nav>
+
+      <div class="nav-auth">
+        <span id="user-display" style="color: var(--muted); font-size: 0.9rem; margin-right: 1rem; display: none;"></span>
+        <a href="profile.html" id="profile-link" class="nav-link" style="color: var(--primary); display: none;">My Profile</a>
+        <a href="settings.html" id="settings-link" class="nav-link" style="color: var(--primary); display: none;">Settings</a>
+        <a href="auth.html" id="auth-link" class="nav-link" style="color: var(--primary);">Sign In</a>
+        <button id="logout-btn" class="nav-link" style="background: none; border: none; cursor: pointer; color: #dc2626; display: none;">Logout</button>
+      </div>
+
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" aria-pressed="false">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="container">
+    <section class="jobs-page-header">
+      <div class="header-content">
+        <h2>Available Opportunities</h2>
+        <p class="lead">Browse local freelance and short-term gigs. Contact posters directly.</p>
+      </div>
+    </section>
+
+    <section class="filters-section card" aria-labelledby="filter-heading">
+      <h3 id="filter-heading" class="visually-hidden">Search Filters</h3>
+      <div class="filter-grid">
+        <div class="search-box">
+          <label for="jobs-search">Search Keywords</label>
+          <input type="search" id="jobs-search" placeholder="Search title, company, or skills...">
+        </div>
+
+        <div class="category-box">
+          <label for="category-filter">Category</label>
+          <select id="category-filter">
+            <option value="All">All Categories</option>
+            <option value="Social Media">Social Media</option>
+            <option value="Graphic Designer">Graphic Designer</option>
+            <option value="Web Designer">Web Designer</option>
+            <option value="Business">Business</option>
+            <option value="Translator">Translator</option>
+            <option value="Tutor">Tutor</option>
+            <option value="Carpentry">Carpentry</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toolbar-footer">
+        <div id="job-count" class="job-count" aria-live="polite">Loading jobs...</div>
+        <div class="toolbar-actions">
+          <label for="sort-filter" class="visually-hidden">Sort jobs</label>
+          <select id="sort-filter" class="sort-filter" aria-label="Sort jobs">
+            <option value="newest">Newest First</option>
+            <option value="budget-high">Budget: High to Low</option>
+            <option value="budget-low">Budget: Low to High</option>
+          </select>
+          <button id="clear-filters" class="btn outline small" style="display:none">Clear All Filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-area">
+      <div id="jobs-list" class="featured-grid" aria-live="polite"></div>
+
+      <div id="empty-state" class="empty-state-container" style="display:none">
+        <div class="empty-icon">No Results</div>
+        <h4>No jobs found</h4>
+        <p>Try adjusting your search terms or category filters.</p>
+        <a href="post-job.html" class="btn">Be the first to post a job</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">AfgJobs</div>
+      <div class="footer-tagline">Helping Afghans find local work</div>
+      <div class="footer-links"><a href="faq.html">FAQ</a><span aria-hidden="true">|</span><a href="privacy.html">Privacy</a><span aria-hidden="true">|</span><a href="terms.html">Terms</a></div>
+      <div class="footer-copyright">&copy; 2026 AfgJobs - Built for Afghanistan</div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
+

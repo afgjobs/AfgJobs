@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Settings - AfgJobs</title>
+  <meta name="description" content="Manage your AfgJobs preferences, notifications, and data settings.">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="canonical" href="https://afgjobs.com/settings.html">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav-row">
+      <div class="brand">
+        <a href="index.html" class="brand-link">
+          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <div>
+            <h1 class="site-title">AfgJobs</h1>
+            <p class="site-tagline">Fast local jobs for Afghans</p>
+          </div>
+        </a>
+      </div>
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link">Jobs</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="post-job.html" class="nav-link cta">Post Job</a>
+      </nav>
+      <div class="nav-auth">
+        <span id="user-display" style="color: var(--muted); font-size: 0.9rem; margin-right: 1rem; display: none;"></span>
+        <a href="profile.html" id="profile-link" class="nav-link" style="color: var(--primary); display: none;">My Profile</a>
+        <a href="settings.html" id="settings-link" class="nav-link active" aria-current="page" style="color: var(--primary); display: none;">Settings</a>
+        <a href="auth.html" id="auth-link" class="nav-link" style="color: var(--primary);">Sign In</a>
+        <button id="logout-btn" class="nav-link" style="background: none; border: none; cursor: pointer; color: #dc2626; display: none;">Logout</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" aria-pressed="false">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="container">
+    <section class="profile-header">
+      <div class="profile-card">
+        <div class="profile-avatar">
+          <span>ST</span>
+        </div>
+        <div class="profile-info">
+          <h2>Settings</h2>
+          <p class="profile-email" id="settings-user">Manage your preferences, notifications, and data controls.</p>
+        </div>
+        <a href="profile.html" class="btn">Go to Profile</a>
+      </div>
+    </section>
+
+    <section class="profile-content">
+      <form id="settings-form">
+        <div class="settings-section">
+          <h4>Theme</h4>
+          <p>Choose the default appearance for this device.</p>
+          <label for="theme-select">Theme preference</label>
+          <select id="theme-select" name="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+
+        <div class="settings-section">
+          <h4>Job Search Defaults</h4>
+          <p>These preferences pre-fill the Jobs page filters.</p>
+          <label for="job-search">Default search keyword</label>
+          <input type="text" id="job-search" name="jobSearch" placeholder="e.g. Web Designer" maxlength="80">
+
+          <label for="job-category">Default category</label>
+          <select id="job-category" name="jobCategory">
+            <option value="All">All Categories</option>
+            <option value="Social Media">Social Media</option>
+            <option value="Graphic Designer">Graphic Designer</option>
+            <option value="Web Designer">Web Designer</option>
+            <option value="Business">Business</option>
+            <option value="Translator">Translator</option>
+            <option value="Tutor">Tutor</option>
+            <option value="Carpentry">Carpentry</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="job-sort">Default sort</label>
+          <select id="job-sort" name="jobSort">
+            <option value="newest">Newest First</option>
+            <option value="budget-high">Budget: High to Low</option>
+            <option value="budget-low">Budget: Low to High</option>
+          </select>
+        </div>
+
+        <div class="settings-section">
+          <h4>Post Job Defaults</h4>
+          <p>Pre-fill your job form with common values.</p>
+          <label for="default-poster-type">Posted by</label>
+          <select id="default-poster-type" name="defaultPosterType">
+            <option value="Company">Company</option>
+            <option value="Freelancer">Freelancer</option>
+          </select>
+
+          <label for="default-category">Default category</label>
+          <select id="default-category" name="defaultCategory">
+            <option value="">Choose a category</option>
+            <option value="Social Media">Social Media</option>
+            <option value="Graphic Designer">Graphic Designer</option>
+            <option value="Web Designer">Web Designer</option>
+            <option value="Business">Business</option>
+            <option value="Translator">Translator</option>
+            <option value="Tutor">Tutor</option>
+            <option value="Carpentry">Carpentry</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="default-currency">Default currency</label>
+          <select id="default-currency" name="defaultCurrency">
+            <option value="USD">USD (Dollar)</option>
+            <option value="AFN">AFN (Afghani)</option>
+          </select>
+
+          <label for="default-location">Default location</label>
+          <input type="text" id="default-location" name="defaultLocation" placeholder="City or Remote" maxlength="80">
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="default-online" name="defaultOnline">
+            <span class="checkbox-text">Online job by default</span>
+          </label>
+        </div>
+
+        <div class="settings-section">
+          <h4>Notifications</h4>
+          <p>Choose which updates you want to see.</p>
+          <label class="checkbox-label">
+            <input type="checkbox" id="notif-weekly" name="weeklyDigest">
+            <span class="checkbox-text">Weekly job digest</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="notif-alerts" name="jobAlerts">
+            <span class="checkbox-text">Instant job alerts</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="notif-product" name="productUpdates">
+            <span class="checkbox-text">Product updates</span>
+          </label>
+        </div>
+
+        <div class="settings-section">
+          <h4>Data Controls</h4>
+          <p>Manage your data stored in this browser.</p>
+          <div class="form-actions">
+            <button type="button" class="btn outline" id="export-data">Export My Data</button>
+            <button type="button" class="btn danger" id="clear-data">Clear Local Data</button>
+          </div>
+          <p id="data-msg" class="form-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn">Save Settings</button>
+          <button type="button" class="btn outline" id="reset-settings">Reset to Defaults</button>
+        </div>
+        <p id="settings-msg" class="form-msg" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">AfgJobs</div>
+      <div class="footer-tagline">Helping Afghans find local work</div>
+      <div class="footer-links"><a href="faq.html">FAQ</a><span aria-hidden="true">|</span><a href="privacy.html">Privacy</a><span aria-hidden="true">|</span><a href="terms.html">Terms</a></div>
+      <div class="footer-copyright">&copy; 2026 AfgJobs - Built for Afghanistan</div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      const settings = Storage.getSettings();
+      const user = Storage.getCurrentUser();
+      const userDisplay = document.getElementById('settings-user');
+
+      if (userDisplay && user) {
+        userDisplay.textContent = `Signed in as ${user.fullname || 'User'} (${user.email || 'no email'})`;
+      }
+
+      document.getElementById('theme-select').value = settings.theme || 'light';
+      document.getElementById('job-search').value = settings.jobSearch || '';
+      document.getElementById('job-category').value = settings.jobCategory || 'All';
+      document.getElementById('job-sort').value = settings.jobSort || 'newest';
+      document.getElementById('default-poster-type').value = settings.defaultPosterType || 'Company';
+      document.getElementById('default-category').value = settings.defaultCategory || '';
+      document.getElementById('default-currency').value = settings.defaultCurrency || 'USD';
+      document.getElementById('default-location').value = settings.defaultLocation || '';
+      document.getElementById('default-online').checked = Boolean(settings.defaultOnline);
+      document.getElementById('notif-weekly').checked = Boolean(settings.notifications?.weeklyDigest);
+      document.getElementById('notif-alerts').checked = Boolean(settings.notifications?.jobAlerts);
+      document.getElementById('notif-product').checked = Boolean(settings.notifications?.productUpdates);
+
+      const msg = document.getElementById('settings-msg');
+      const dataMsg = document.getElementById('data-msg');
+      const themeSelect = document.getElementById('theme-select');
+
+      themeSelect.addEventListener('change', () => {
+        const selected = themeSelect.value === 'dark' ? 'dark' : 'light';
+        document.body.classList.toggle('dark', selected === 'dark');
+        Storage.setTheme(selected);
+        Storage.saveSettings({
+          ...settings,
+          theme: selected
+        });
+      });
+
+      document.getElementById('settings-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const updated = {
+          theme: themeSelect.value === 'dark' ? 'dark' : 'light',
+          jobSearch: String(document.getElementById('job-search').value || '').trim(),
+          jobCategory: document.getElementById('job-category').value || 'All',
+          jobSort: document.getElementById('job-sort').value || 'newest',
+          defaultPosterType: document.getElementById('default-poster-type').value || 'Company',
+          defaultCategory: document.getElementById('default-category').value || '',
+          defaultCurrency: document.getElementById('default-currency').value || 'USD',
+          defaultLocation: String(document.getElementById('default-location').value || '').trim(),
+          defaultOnline: document.getElementById('default-online').checked,
+          notifications: {
+            weeklyDigest: document.getElementById('notif-weekly').checked,
+            jobAlerts: document.getElementById('notif-alerts').checked,
+            productUpdates: document.getElementById('notif-product').checked
+          }
+        };
+
+        Storage.saveSettings(updated);
+        Storage.setTheme(updated.theme);
+        document.body.classList.toggle('dark', updated.theme === 'dark');
+        if (msg) {
+          msg.textContent = 'Settings saved.';
+          msg.className = 'form-msg success';
+          setTimeout(() => {
+            msg.className = 'form-msg';
+            msg.textContent = '';
+          }, 2000);
+        }
+      });
+
+      document.getElementById('reset-settings').addEventListener('click', () => {
+        if (!confirm('Reset settings to defaults?')) return;
+        localStorage.removeItem(APP_KEYS.SETTINGS);
+        window.location.reload();
+      });
+
+      document.getElementById('export-data').addEventListener('click', () => {
+        const exportPayload = {
+          jobs: Utils.readJson(APP_KEYS.JOBS, []),
+          users: Utils.readJson(APP_KEYS.USERS, []),
+          currentUser: Utils.readJson(APP_KEYS.USER, null),
+          feedback: Utils.readJson(APP_KEYS.FEEDBACK, []),
+          newsletter: Utils.readJson(APP_KEYS.NEWSLETTER, []),
+          settings: Utils.readJson(APP_KEYS.SETTINGS, {})
+        };
+
+        const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'afgjobs-data.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        if (dataMsg) {
+          dataMsg.textContent = 'Export created.';
+          dataMsg.className = 'form-msg success';
+        }
+      });
+
+      document.getElementById('clear-data').addEventListener('click', () => {
+        if (!confirm('This will remove your local jobs, account, and settings from this browser. Continue?')) return;
+        const keys = [
+          APP_KEYS.JOBS,
+          APP_KEYS.LEGACY_JOBS,
+          APP_KEYS.USERS,
+          APP_KEYS.USER,
+          APP_KEYS.FEEDBACK,
+          APP_KEYS.NEWSLETTER,
+          APP_KEYS.SETTINGS,
+          APP_KEYS.THEME
+        ];
+        keys.forEach((key) => localStorage.removeItem(key));
+        if (dataMsg) {
+          dataMsg.textContent = 'Local data cleared. Refreshing...';
+          dataMsg.className = 'form-msg success';
+        }
+        setTimeout(() => window.location.reload(), 800);
+      });
+    });
+  </script>
+</body>
+</html>
