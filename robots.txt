@@ -1,0 +1,5 @@
+# AfgJobs - Robots configuration file
+User-agent: *
+Allow: /
+
+Sitemap: https://afgjobs.com/sitemap.xml

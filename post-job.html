@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Post a Job - AfgJobs</title>
+  <meta name="description" content="Post a job on AfgJobs with title, description, location, category, budget, and contact details.">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="canonical" href="https://afgjobs.com/post-job.html">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav-row">
+      <div class="brand">
+        <a href="index.html" class="brand-link">
+          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <div>
+            <h1 class="site-title">AfgJobs</h1>
+            <p class="site-tagline">Fast local jobs for Afghans</p>
+          </div>
+        </a>
+      </div>
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link">Jobs</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="post-job.html" class="nav-link cta active" aria-current="page">Post Job</a>
+      </nav>
+      <div class="nav-auth">
+        <span id="user-display" style="color: var(--muted); font-size: 0.9rem; margin-right: 1rem; display: none;"></span>
+        <a href="profile.html" id="profile-link" class="nav-link" style="color: var(--primary); display: none;">My Profile</a>
+        <a href="settings.html" id="settings-link" class="nav-link" style="color: var(--primary); display: none;">Settings</a>
+        <a href="auth.html" id="auth-link" class="nav-link" style="color: var(--primary);">Sign In</a>
+        <button id="logout-btn" class="nav-link" style="background: none; border: none; cursor: pointer; color: #dc2626; display: none;">Logout</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" aria-pressed="false">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="container">
+    <section class="post-form">
+      <h2>Post a Job</h2>
+      <p class="lead">Fill in the details below. Submitted jobs will appear on the Jobs page.</p>
+
+      <form id="post-job-form" novalidate>
+        <input type="hidden" id="job-id" name="jobId" value="">
+        <label for="poster-type"><span class="required">*</span>Posted by</label>
+        <select id="poster-type" name="posterType" required aria-required="true">
+          <option value="Company">Company</option>
+          <option value="Freelancer">Freelancer</option>
+        </select>
+        <small class="error" id="error-posterType" aria-live="polite"></small>
+
+        <label for="category"><span class="required">*</span>Category</label>
+        <select id="category" name="category" required aria-required="true">
+          <option value="" disabled selected>Choose a category</option>
+          <option value="Social Media">Social Media</option>
+          <option value="Graphic Designer">Graphic Designer</option>
+          <option value="Web Designer">Web Designer</option>
+          <option value="Business">Business</option>
+          <option value="Translator">Translator</option>
+          <option value="Tutor">Tutor</option>
+          <option value="Carpentry">Carpentry</option>
+          <option value="Other">Other</option>
+        </select>
+        <small class="error" id="error-category" aria-live="polite"></small>
+
+        <label for="title"><span class="required">*</span>Job Title</label>
+        <input type="text" id="title" name="title" required aria-required="true" placeholder="e.g. Frontend Web Designer (Kabul)" maxlength="120">
+        <small class="error" id="error-title" aria-live="polite"></small>
+
+        <label for="description"><span class="required">*</span>Description <span class="char-count" id="char-count">0/1000</span></label>
+        <textarea id="description" name="description" rows="6" required aria-required="true" placeholder="Describe the work, hours, pay, and required skills (max 1000 chars)" maxlength="1000"></textarea>
+        <small class="error" id="error-description" aria-live="polite"></small>
+
+        <label for="location"><span class="required">*</span>Location</label>
+        <input type="text" id="location" name="location" required aria-required="true" placeholder="City or 'Remote'">
+        <small class="error" id="error-location" aria-live="polite"></small>
+
+        <label for="price"><span class="required">*</span>Price</label>
+        <div class="price-input-group">
+          <input type="number" id="price" name="price" required aria-required="true" placeholder="Enter price amount" min="0" step="0.01">
+          <select id="currency" name="currency" required aria-required="true">
+            <option value="USD">USD (Dollar)</option>
+            <option value="AFN">AFN (Afghani)</option>
+          </select>
+        </div>
+        <small class="error" id="error-price" aria-live="polite"></small>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="is-online" name="isOnline">
+          <span class="checkbox-text">This is an online job</span>
+        </label>
+
+        <label for="sample-link" id="sample-link-label" style="display:none"><span class="required">*</span>Sample link (if online)</label>
+        <input type="url" id="sample-link" name="sampleLink" placeholder="https://example.com/sample" style="display:none">
+        <small class="error" id="error-sampleLink" aria-live="polite"></small>
+
+        <label for="contact"><span class="required">*</span>Contact Info (phone or email)</label>
+        <input type="text" id="contact" name="contact" required aria-required="true" placeholder="email@example.com or +93 700 123 456">
+        <small class="error" id="error-contact" aria-live="polite"></small>
+
+        <label for="portfolio-link">Portfolio Link (optional)</label>
+        <input type="url" id="portfolio-link" name="portfolioLink" placeholder="https://instagram.com/username or https://youtube.com/c/yourprofile" aria-describedby="portfolio-help">
+        <small id="portfolio-help" class="help-text">Instagram, TikTok, YouTube, or portfolio website</small>
+        <small class="error" id="error-portfolioLink" aria-live="polite"></small>
+
+        <label>Media Upload (optional)</label>
+        <div class="media-upload-area" id="media-upload-area">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p class="upload-text">Drag and drop images or videos here</p>
+          <p class="upload-subtext">or <button type="button" id="upload-btn" class="upload-link">click to browse</button></p>
+          <p class="upload-limit">Max 2MB per file (images or short videos)</p>
+        </div>
+        <input type="file" id="media-upload-input" name="mediaFile" accept="image/*,video/*" style="display:none">
+        <div id="media-preview-container" class="media-preview-container" style="display:none">
+          <div class="media-preview">
+            <img id="media-preview-img" class="media-preview-img" style="display:none" alt="Preview image">
+            <video id="media-preview-video" class="media-preview-video" style="display:none" controls></video>
+            <button type="button" id="media-remove-btn" class="media-remove-btn">Remove</button>
+          </div>
+          <p id="media-info" class="media-info"></p>
+        </div>
+        <small class="error" id="error-mediaFile" aria-live="polite"></small>
+
+        <button type="submit" class="btn" id="submit-btn">Submit Job</button>
+        <button type="button" id="cancel-edit" class="btn outline" style="display:none">Cancel</button>
+      </form>
+
+      <p id="form-msg" class="form-msg" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">AfgJobs</div>
+      <div class="footer-tagline">Helping Afghans find local work</div>
+      <div class="footer-links"><a href="faq.html">FAQ</a><span aria-hidden="true">|</span><a href="privacy.html">Privacy</a><span aria-hidden="true">|</span><a href="terms.html">Terms</a></div>
+      <div class="footer-copyright">&copy; 2026 AfgJobs - Built for Afghanistan</div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
+
+
