@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!doctype html>
 <html lang="en">
 <head>
@@ -643,3 +644,650 @@
 </html>
 
 
+=======
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Job Details - AfgJobs</title>
+  <meta name="description" content="View full job details and contact information on AfgJobs.">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="canonical" href="https://afgjobs.com/job-detail.html">
+  <style>
+    /* Job Detail Specific Styles */
+    .job-detail-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+      color: white;
+      padding: 3rem 0;
+      margin-bottom: 2rem;
+    }
+
+    .job-detail-hero .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .job-header-content h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .job-meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .job-detail-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .job-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .job-media-container {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--accent-bg);
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+
+    .job-media-container img,
+    .job-media-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .job-no-media {
+      color: var(--muted);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .job-section {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .job-section h3 {
+      color: var(--text);
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .description-text {
+      color: var(--text);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .job-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .contact-card {
+      background: var(--card);
+      border: 2px solid var(--primary);
+      padding: 2rem;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .contact-card h4 {
+      color: var(--text);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .contact-info {
+      background: var(--accent-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .contact-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    .contact-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .contact-btn.primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .contact-btn.secondary {
+      background: var(--accent-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .contact-btn.secondary:hover {
+      background: var(--border);
+    }
+
+    .budget-card {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .budget-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .budget-amount {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .budget-type {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .tag {
+      background: var(--primary);
+      color: white;
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .portfolio-link-section {
+      background: var(--accent-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border-left: 4px solid var(--primary);
+    }
+
+    .portfolio-link-section h4 {
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .portfolio-link-section a {
+      color: var(--primary);
+      text-decoration: none;
+      word-break: break-all;
+      font-weight: 600;
+    }
+
+    .portfolio-link-section a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      transition: gap 0.2s ease;
+    }
+
+    .back-link:hover {
+      gap: 0.75rem;
+    }
+
+    .job-not-found {
+      text-align: center;
+      padding: 4rem 0;
+    }
+
+    .job-not-found h2 {
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .job-not-found p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .job-detail-content {
+        grid-template-columns: 1fr;
+      }
+
+      .job-detail-hero .container {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .job-detail-hero .container h1 {
+        font-size: 1.8rem;
+      }
+
+      .job-meta {
+        justify-content: center;
+      }
+
+      .meta-item {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+
+      .job-media-container {
+        height: 250px;
+      }
+
+      .contact-card {
+        padding: 1.5rem;
+      }
+
+      .budget-amount {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav-row">
+      <div class="brand">
+        <a href="index.html" class="brand-link">
+          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <div>
+            <h1 class="site-title">AfgJobs</h1>
+            <p class="site-tagline">Fast local jobs for Afghans</p>
+          </div>
+        </a>
+      </div>
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link active" aria-current="page">Jobs</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="post-job.html" class="nav-link cta">Post Job</a>
+      </nav>
+      <div class="nav-auth">
+        <span id="user-display" style="color: var(--muted); font-size: 0.9rem; margin-right: 1rem; display: none;"></span>
+        <a href="profile.html" id="profile-link" class="nav-link" style="color: var(--primary); display: none;">My Profile</a>
+        <a href="settings.html" id="settings-link" class="nav-link" style="color: var(--primary); display: none;">Settings</a>
+        <a href="auth.html" id="auth-link" class="nav-link" style="color: var(--primary);">Sign In</a>
+        <button id="logout-btn" class="nav-link" style="background: none; border: none; cursor: pointer; color: #dc2626; display: none;">Logout</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" aria-pressed="false">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="job-detail-page">
+    <div id="job-detail-hero" class="job-detail-hero" style="display: none;">
+      <div class="container">
+        <div class="job-header-content">
+          <a href="jobs.html" class="back-link">Back to Jobs</a>
+          <h1 id="job-title">Loading...</h1>
+          <div class="job-meta">
+            <div class="meta-item" id="category-meta">Category</div>
+            <div class="meta-item" id="location-meta">Location</div>
+            <div class="meta-item" id="type-meta">Type</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="job-not-found" class="container job-not-found" style="display: none;">
+      <h2>Job Not Found</h2>
+      <p>This job no longer exists or the link is broken.</p>
+      <a href="jobs.html" class="btn">Browse All Jobs</a>
+    </div>
+
+    <div id="job-content" class="container job-detail-content" style="display: none;">
+      <!-- Main Content -->
+      <div class="job-main">
+        <!-- Media Section -->
+        <div id="media-section" style="display: none;">
+          <div class="job-media-container">
+            <img id="job-media-img" style="display: none;" alt="Job media">
+            <video id="job-media-video" style="display: none;" controls></video>
+            <div id="job-media-placeholder" class="job-no-media" style="display: none;">No media attached</div>
+          </div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="job-section">
+          <h3>Job Description</h3>
+          <p class="description-text" id="job-description">Loading description...</p>
+        </div>
+
+        <!-- Portfolio Section -->
+        <div id="portfolio-section" class="portfolio-link-section" style="display: none;">
+          <h4>Portfolio / Social Media</h4>
+          <a id="portfolio-link-text" href="#" target="_blank" rel="noopener">View portfolio</a>
+        </div>
+
+        <!-- Online Job Details -->
+        <div id="online-job-section" class="job-section" style="display: none;">
+          <h3>Online Job Details</h3>
+          <p><strong>Sample Link:</strong></p>
+          <a id="sample-link-text" href="#" target="_blank" rel="noopener" style="color: var(--primary); word-break: break-all;">View sample</a>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="job-sidebar">
+        <!-- Budget Card -->
+        <div class="budget-card">
+          <div class="budget-label">Budget</div>
+          <div class="budget-amount" id="job-budget">$0</div>
+          <div class="budget-type" id="job-currency">USD</div>
+          <div class="tags-container">
+            <span class="tag" id="category-badge">Category</span>
+            <span class="tag" id="type-badge">Type</span>
+          </div>
+        </div>
+
+        <!-- Contact Card -->
+        <div class="contact-card">
+          <h4>Get in Touch</h4>
+          <div class="contact-info" id="contact-display">Loading contact...</div>
+          <div class="contact-buttons">
+            <a id="contact-primary-btn" href="#" class="contact-btn primary">
+              <span id="contact-btn-text">Contact</span>
+            </a>
+            <button id="copy-contact-btn" class="contact-btn secondary">
+              Copy Contact
+            </button>
+          </div>
+        </div>
+
+        <!-- Share Card -->
+        <div class="job-section" style="text-align: center;">
+          <h4 style="margin-bottom: 1rem;">Share This Job</h4>
+          <div class="contact-buttons">
+            <button id="share-whatsapp-btn" class="contact-btn secondary">WhatsApp</button>
+            <button id="share-copy-link-btn" class="contact-btn secondary">Copy Link</button>
+          </div>
+        </div>
+
+        <!-- Posted Date -->
+        <div class="job-section" style="text-align: center;">
+          <p style="color: var(--muted); font-size: 0.9rem;">
+            Posted on <strong id="posted-date">-</strong>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">AfgJobs</div>
+      <div class="footer-tagline">Helping Afghans find local work</div>
+      <div class="footer-links"><a href="faq.html">FAQ</a><span aria-hidden="true">|</span><a href="privacy.html">Privacy</a><span aria-hidden="true">|</span><a href="terms.html">Terms</a></div>
+      <div class="footer-copyright">&copy; 2026 AfgJobs - Built for Afghanistan</div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+  <script defer>
+    // Job Detail Page Logic
+    const JobDetail = {
+      getJobIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+      },
+
+      getJobById(id) {
+        if (!id) return null;
+        const allJobs = Storage.getAllJobs();
+        return allJobs.find(job => job.id === Number(id));
+      },
+
+      formatDate(isoString) {
+        if (!isoString) return '-';
+        const date = new Date(isoString);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      },
+
+      renderJobDetail(job) {
+        if (!job) {
+          document.getElementById('job-not-found').style.display = 'block';
+          document.getElementById('job-detail-hero').style.display = 'none';
+          document.getElementById('job-content').style.display = 'none';
+          return;
+        }
+
+        // Show content
+        document.getElementById('job-not-found').style.display = 'none';
+        document.getElementById('job-detail-hero').style.display = 'block';
+        document.getElementById('job-content').style.display = 'grid';
+
+        // Header
+        document.getElementById('job-title').textContent = job.title || 'Untitled';
+        document.getElementById('category-meta').textContent = `Category: ${job.category || 'Other'}`;
+        document.getElementById('location-meta').textContent = `Location: ${job.location || 'Remote'}`;
+        document.getElementById('type-meta').textContent = `Posted by: ${job.posterType || 'Poster'}`;
+
+        // Description
+        document.getElementById('job-description').textContent = job.description || 'No description provided';
+
+        // Budget
+        document.getElementById('job-budget').textContent = `${job.currency || 'USD'} ${job.price || '0'}`;
+        document.getElementById('job-currency').textContent = job.currency || 'USD';
+        document.getElementById('category-badge').textContent = job.category || 'Other';
+        document.getElementById('type-badge').textContent = job.posterType || 'Poster';
+
+        // Contact
+        const contact = String(job.contact || '').trim();
+        const isEmail = Utils.isEmail(contact);
+        document.getElementById('contact-display').textContent = contact;
+
+        if (isEmail) {
+          document.getElementById('contact-primary-btn').href = `mailto:${encodeURIComponent(contact)}`;
+          document.getElementById('contact-btn-text').textContent = 'Email';
+        } else {
+          document.getElementById('contact-primary-btn').href = `tel:${contact.replace(/[^\d+]/g, '')}`;
+          document.getElementById('contact-btn-text').textContent = 'Call';
+        }
+
+        // Media
+        if (job.media) {
+          document.getElementById('media-section').style.display = 'block';
+          const isVideo = (job.mediaType || '').includes('video');
+          if (isVideo) {
+            document.getElementById('job-media-video').src = job.media;
+            document.getElementById('job-media-video').style.display = 'block';
+            document.getElementById('job-media-img').style.display = 'none';
+          } else {
+            document.getElementById('job-media-img').src = job.media;
+            document.getElementById('job-media-img').style.display = 'block';
+            document.getElementById('job-media-video').style.display = 'none';
+          }
+          document.getElementById('job-media-placeholder').style.display = 'none';
+        } else {
+          document.getElementById('media-section').style.display = 'block';
+          document.getElementById('job-media-placeholder').style.display = 'block';
+          document.getElementById('job-media-img').style.display = 'none';
+          document.getElementById('job-media-video').style.display = 'none';
+        }
+
+        // Portfolio Link
+        if (job.portfolioLink) {
+          const safePortfolio = Utils.safeHttpUrl(job.portfolioLink);
+          if (!safePortfolio) {
+            document.getElementById('portfolio-section').style.display = 'none';
+          } else {
+          document.getElementById('portfolio-section').style.display = 'block';
+          document.getElementById('portfolio-link-text').href = safePortfolio;
+          document.getElementById('portfolio-link-text').textContent = safePortfolio;
+          }
+        } else {
+          document.getElementById('portfolio-section').style.display = 'none';
+        }
+
+        // Online Job
+        if (job.isOnline && job.sampleLink) {
+          const safeSample = Utils.safeHttpUrl(job.sampleLink);
+          if (!safeSample) {
+            document.getElementById('online-job-section').style.display = 'none';
+          } else {
+          document.getElementById('online-job-section').style.display = 'block';
+          document.getElementById('sample-link-text').href = safeSample;
+          document.getElementById('sample-link-text').textContent = safeSample;
+          }
+        } else {
+          document.getElementById('online-job-section').style.display = 'none';
+        }
+
+        // Date
+        document.getElementById('posted-date').textContent = this.formatDate(job.createdAt);
+
+        // Set page title
+        document.title = `${job.title} - AfgJobs`;
+
+        // Event listeners
+        this.setupEventListeners(contact);
+      },
+
+      setupEventListeners(contact) {
+        const copyText = (value) => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(value);
+          }
+
+          return new Promise((resolve, reject) => {
+            const input = document.createElement('input');
+            input.value = value;
+            document.body.appendChild(input);
+            input.select();
+            const success = document.execCommand('copy');
+            input.remove();
+            if (success) resolve();
+            else reject(new Error('Copy failed'));
+          });
+        };
+
+        // Copy contact
+        document.getElementById('copy-contact-btn').addEventListener('click', () => {
+          copyText(contact).then(() => {
+            const btn = document.getElementById('copy-contact-btn');
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = original, 2000);
+          }).catch(() => alert('Failed to copy'));
+        });
+
+        // WhatsApp share
+        document.getElementById('share-whatsapp-btn').addEventListener('click', () => {
+          const title = document.getElementById('job-title').textContent;
+          const url = window.location.href;
+          const message = `Check out this job on AfgJobs: ${title} - ${url}`;
+          const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+          window.open(whatsappUrl, '_blank');
+        });
+
+        // Copy link
+        document.getElementById('share-copy-link-btn').addEventListener('click', () => {
+          copyText(window.location.href).then(() => {
+            const btn = document.getElementById('share-copy-link-btn');
+            const original = btn.textContent;
+            btn.textContent = 'Link Copied!';
+            setTimeout(() => btn.textContent = original, 2000);
+          }).catch(() => alert('Failed to copy link'));
+        });
+      },
+
+      init() {
+        const jobId = this.getJobIdFromUrl();
+        const job = this.getJobById(jobId);
+        this.renderJobDetail(job);
+      }
+    };
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      JobDetail.init();
+    });
+  </script>
+</body>
+</html>
+
+
+>>>>>>> e5be452a9eb586327c583ab7682f7572a61a9c88
