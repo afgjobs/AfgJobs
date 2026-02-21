@@ -69,14 +69,36 @@
         <label for="category"><span class="required">*</span>Category</label>
         <select id="category" name="category" required aria-required="true">
           <option value="" disabled selected>Choose a category</option>
-          <option value="Social Media">Social Media</option>
-          <option value="Graphic Designer">Graphic Designer</option>
-          <option value="Web Designer">Web Designer</option>
-          <option value="Business">Business</option>
-          <option value="Translator">Translator</option>
-          <option value="Tutor">Tutor</option>
-          <option value="Carpentry">Carpentry</option>
-          <option value="Other">Other</option>
+          <optgroup label="Online Jobs">
+            <option value="Social Media">Social Media</option>
+            <option value="Digital Marketing">Digital Marketing</option>
+            <option value="Content Writing">Content Writing</option>
+            <option value="Graphic Designer">Graphic Designer</option>
+            <option value="UI/UX Design">UI/UX Design</option>
+            <option value="Web Designer">Web Designer</option>
+            <option value="Video Editing">Video Editing</option>
+            <option value="Data Entry">Data Entry</option>
+            <option value="Virtual Assistant">Virtual Assistant</option>
+            <option value="Customer Support">Customer Support</option>
+            <option value="SEO">SEO</option>
+            <option value="Translator">Translator</option>
+            <option value="Tutor">Tutor</option>
+          </optgroup>
+          <optgroup label="Offline Jobs">
+            <option value="Business">Business</option>
+            <option value="Retail">Retail</option>
+            <option value="Hospitality">Hospitality</option>
+            <option value="Construction">Construction</option>
+            <option value="Carpentry">Carpentry</option>
+            <option value="Delivery Driver">Delivery Driver</option>
+            <option value="Security">Security</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Cleaning">Cleaning</option>
+            <option value="Sales">Sales</option>
+            <option value="Warehouse">Warehouse</option>
+            <option value="Teaching">Teaching</option>
+            <option value="Other">Other</option>
+          </optgroup>
         </select>
         <small class="error" id="error-category" aria-live="polite"></small>
 
@@ -98,6 +120,11 @@
           <select id="currency" name="currency" required aria-required="true">
             <option value="USD">USD (Dollar)</option>
             <option value="AFN">AFN (Afghani)</option>
+            <option value="PKR">PKR (Pakistani Rupee)</option>
+            <option value="EUR">EUR (Euro)</option>
+            <option value="GBP">GBP (British Pound)</option>
+            <option value="AED">AED (UAE Dirham)</option>
+            <option value="INR">INR (Indian Rupee)</option>
           </select>
         </div>
         <small class="error" id="error-price" aria-live="polite"></small>

@@ -11,7 +11,8 @@ const APP_KEYS = {
     USER: 'afg_current_user',
     SETTINGS: 'afg_settings',
     FEEDBACK: 'afg_feedback',
-    NEWSLETTER: 'afg_newsletter'
+    NEWSLETTER: 'afg_newsletter',
+    SEEKER_POSTS: 'afg_job_seeker_posts'
 };
 
 const DEFAULT_SETTINGS = {
@@ -127,6 +128,13 @@ const Utils = {
         } catch {
             return fallback;
         }
+    },
+
+    isJobOwner(job, user) {
+        if (!job || !user) return false;
+        if (job.posterId && user.id && String(job.posterId) === String(user.id)) return true;
+        if (job.postedBy && user.email && String(job.postedBy).toLowerCase() === String(user.email).toLowerCase()) return true;
+        return false;
     }
 };
 
@@ -215,6 +223,17 @@ const Storage = {
 
     saveSettings(settings) {
         localStorage.setItem(APP_KEYS.SETTINGS, JSON.stringify(settings || {}));
+    },
+
+    deleteJobById(jobId, user) {
+        const jobs = this.getAllJobs();
+        const target = jobs.find((job) => String(job.id) === String(jobId));
+        if (!target) return { ok: false, reason: 'not-found' };
+        if (!Utils.isJobOwner(target, user)) return { ok: false, reason: 'not-owner' };
+
+        const updated = jobs.filter((job) => String(job.id) !== String(jobId));
+        localStorage.setItem(APP_KEYS.JOBS, JSON.stringify(updated));
+        return { ok: true };
     }
 };
 
@@ -752,6 +771,71 @@ const NewsletterHandler = {
     }
 };
 
+const JobSeekerHandler = {
+    init() {
+        const form = document.getElementById('seeker-form');
+        if (!form) return;
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const name = String(document.getElementById('seeker-name')?.value || '').trim();
+            const location = String(document.getElementById('seeker-location')?.value || '').trim();
+            const skills = String(document.getElementById('seeker-skills')?.value || '').trim();
+            const contact = String(document.getElementById('seeker-contact')?.value || '').trim();
+            const msgEl = document.getElementById('seeker-msg');
+
+            if (!name || !location || !skills || !contact) {
+                if (msgEl) {
+                    msgEl.textContent = 'Please complete all fields.';
+                    msgEl.className = 'feedback-msg error';
+                }
+                return;
+            }
+
+            if (skills.length < 20) {
+                if (msgEl) {
+                    msgEl.textContent = 'Please add at least 20 characters about your skills.';
+                    msgEl.className = 'feedback-msg error';
+                }
+                return;
+            }
+
+            if (!Utils.isEmail(contact) && !Utils.isPhone(contact)) {
+                if (msgEl) {
+                    msgEl.textContent = 'Contact must be a valid email or phone number.';
+                    msgEl.className = 'feedback-msg error';
+                }
+                return;
+            }
+
+            const posts = Utils.readJson(APP_KEYS.SEEKER_POSTS, []);
+            posts.unshift({
+                id: Date.now(),
+                name,
+                location,
+                skills,
+                contact,
+                createdAt: new Date().toISOString()
+            });
+
+            try {
+                localStorage.setItem(APP_KEYS.SEEKER_POSTS, JSON.stringify(posts.slice(0, 200)));
+                form.reset();
+                if (msgEl) {
+                    msgEl.textContent = 'Your job-seeker profile was posted successfully.';
+                    msgEl.className = 'feedback-msg success';
+                }
+            } catch {
+                if (msgEl) {
+                    msgEl.textContent = 'Could not save your profile. Please try again.';
+                    msgEl.className = 'feedback-msg error';
+                }
+            }
+        });
+    }
+};
+
 const StatsManager = {
     init() {
         const jobsEl = document.getElementById('stat-jobs-posted');
@@ -795,6 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
     FormHandler.init();
     FeedbackHandler.init();
     NewsletterHandler.init();
+    JobSeekerHandler.init();
 
     const allJobs = Storage.getAllJobs();
     // Avoid overriding the filtered results on pages where search/filter controls exist.

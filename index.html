@@ -77,6 +77,7 @@
 
       <div class="quick-search">
         <div class="search-wrap">
+          <label for="hero-search" class="visually-hidden">Search jobs or categories</label>
           <input id="hero-search" type="search" placeholder="Quick search jobs or categories (e.g. Web Designer)">
           <button id="hero-search-btn" class="btn">Search</button>
         </div>
@@ -98,6 +99,23 @@
           <p id="stat-categories" class="stat-value">0</p>
         </article>
       </div>
+    </section>
+
+    <section class="feedback-section" aria-labelledby="seeker-heading">
+      <h4 id="seeker-heading">Need a job? Post your profile</h4>
+      <p class="lead">Tell employers who you are, what skills you have, and how to contact you.</p>
+      <form id="seeker-form" class="feedback-form">
+        <label for="seeker-name" class="visually-hidden">Your full name</label>
+        <input type="text" id="seeker-name" name="name" placeholder="Your full name" maxlength="100" required>
+        <label for="seeker-location" class="visually-hidden">Your city</label>
+        <input type="text" id="seeker-location" name="location" placeholder="City (e.g. Kabul)" maxlength="100" required>
+        <label for="seeker-skills" class="visually-hidden">Your skills and job type</label>
+        <textarea id="seeker-skills" name="skills" placeholder="Example: I need a job as a web designer. I have 2 years of experience with HTML, CSS, and WordPress." rows="4" maxlength="500" required></textarea>
+        <label for="seeker-contact" class="visually-hidden">Your email or phone</label>
+        <input type="text" id="seeker-contact" name="contact" placeholder="Email or phone" maxlength="120" required>
+        <button type="submit" class="btn">Post My Job Need</button>
+        <p id="seeker-msg" class="feedback-msg" aria-live="polite"></p>
+      </form>
     </section>
 
     <section class="featured container">
@@ -179,8 +197,11 @@
     <section class="feedback-section">
       <h4>Share feedback or ideas</h4>
       <form id="feedback-form" class="feedback-form">
+        <label for="feedback-name" class="visually-hidden">Your name</label>
         <input type="text" id="feedback-name" name="name" placeholder="Your name (optional)" maxlength="100">
+        <label for="feedback-email" class="visually-hidden">Your email</label>
         <input type="email" id="feedback-email" name="email" placeholder="Your email (optional - only if you want a reply)" maxlength="100">
+        <label for="feedback-message" class="visually-hidden">Your feedback or suggestion</label>
         <textarea id="feedback-message" name="message" placeholder="Your feedback or suggestion..." rows="3" maxlength="500" required></textarea>
         <button type="submit" class="btn">Send</button>
         <p id="feedback-msg" class="feedback-msg" aria-live="polite"></p>
