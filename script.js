@@ -155,6 +155,26 @@ const FirebaseStore = {
     }
 };
 
+const FirebaseAuthLoader = {
+    loading: null,
+
+    load() {
+        if (!window.firebase) return Promise.resolve(false);
+        if (window.firebase.auth) return Promise.resolve(true);
+        if (this.loading) return this.loading;
+
+        this.loading = new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://www.gstatic.com/firebasejs/10.12.3/firebase-auth-compat.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.head.appendChild(script);
+        });
+
+        return this.loading;
+    }
+};
+
 const Storage = {
     getAllJobs() {
         try {
@@ -959,29 +979,86 @@ const LanguageManager = {
 
 const AuthManager = {
     init() {
-        const user = Storage.getCurrentUser();
         const userDisplay = document.getElementById('user-display');
         const authLink = document.getElementById('auth-link');
         const profileLink = document.getElementById('profile-link');
         const settingsLink = document.getElementById('settings-link');
         const logoutBtn = document.getElementById('logout-btn');
 
-        if (!user || !userDisplay || !authLink || !logoutBtn) return;
+        if (!userDisplay || !authLink || !logoutBtn) return;
 
-        userDisplay.textContent = LanguageManager.formatWelcome(user.fullname || 'User');
-        userDisplay.style.display = 'inline';
-        authLink.style.display = 'none';
-        if (profileLink) profileLink.style.display = 'inline';
-        if (settingsLink) settingsLink.style.display = 'inline';
-        logoutBtn.style.display = 'inline';
+        const applySignedOut = () => {
+            userDisplay.textContent = '';
+            userDisplay.style.display = 'none';
+            authLink.style.display = 'inline';
+            if (profileLink) profileLink.style.display = 'none';
+            if (settingsLink) settingsLink.style.display = 'none';
+            logoutBtn.style.display = 'none';
+        };
 
-        logoutBtn.addEventListener('click', (event) => {
+        const applySignedIn = (user) => {
+            if (!user) {
+                applySignedOut();
+                return;
+            }
+            userDisplay.textContent = LanguageManager.formatWelcome(user.fullname || 'User');
+            userDisplay.style.display = 'inline';
+            authLink.style.display = 'none';
+            if (profileLink) profileLink.style.display = 'inline';
+            if (settingsLink) settingsLink.style.display = 'inline';
+            logoutBtn.style.display = 'inline';
+        };
+
+        const localUser = Storage.getCurrentUser();
+        if (localUser) {
+            applySignedIn(localUser);
+        } else {
+            applySignedOut();
+        }
+
+        logoutBtn.addEventListener('click', async (event) => {
             event.preventDefault();
             if (!confirm(LanguageManager.t('logout_confirm'))) return;
 
             localStorage.removeItem(APP_KEYS.USER);
+            localStorage.removeItem('afg_auth_source');
+
+            if (window.firebase && window.firebase.auth) {
+                try {
+                    await window.firebase.auth().signOut();
+                } catch {
+                    // Ignore Firebase sign-out errors and still clear local session.
+                }
+            }
+
             window.location.reload();
         });
+
+        if (window.firebase && window.firebase.auth) {
+            const auth = window.firebase.auth();
+            auth.onAuthStateChanged((fbUser) => {
+                if (fbUser && fbUser.uid) {
+                    const providerInfo = Array.isArray(fbUser.providerData) ? fbUser.providerData[0] : null;
+                    const syncedUser = {
+                        id: fbUser.uid,
+                        email: fbUser.email || '',
+                        fullname: fbUser.displayName || 'User',
+                        phone: fbUser.phoneNumber || '',
+                        authProvider: providerInfo?.providerId || ''
+                    };
+                    localStorage.setItem(APP_KEYS.USER, JSON.stringify(syncedUser));
+                    localStorage.setItem('afg_auth_source', 'firebase');
+                    applySignedIn(syncedUser);
+                    return;
+                }
+
+                if (localStorage.getItem('afg_auth_source') === 'firebase') {
+                    localStorage.removeItem(APP_KEYS.USER);
+                    localStorage.removeItem('afg_auth_source');
+                    applySignedOut();
+                }
+            });
+        }
     }
 };
 
@@ -1506,6 +1583,7 @@ const StatsManager = {
 document.addEventListener('DOMContentLoaded', async () => {
     LayoutManager.ensureNavRight();
     await FirebaseStore.init();
+    await FirebaseAuthLoader.load();
     LanguageManager.init();
     ThemeManager.init();
     AuthManager.init();

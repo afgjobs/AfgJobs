@@ -472,6 +472,7 @@
         phone: user.phone || '',
         authProvider: user.authProvider || ''
       }));
+      localStorage.setItem('afg_auth_source', user.authSource || '');
 
       showMessage(formType, message, 'success');
       setTimeout(() => window.location.href = 'index.html', 1500);
@@ -551,8 +552,34 @@
       return 'Could not complete social login. Check provider setup and try again.';
     }
 
+    async function tryRedirectAuth(providerName, mode) {
+      const formType = mode === 'signup' ? 'signup' : 'login';
+      const init = ensureFirebaseAuth();
+      if (!init.auth) {
+        showMessage(formType, init.error, 'error');
+        return;
+      }
+
+      const provider = createProvider(providerName);
+      if (!provider) {
+        showMessage(formType, 'Unsupported social provider selected.', 'error');
+        return;
+      }
+
+      try {
+        localStorage.setItem('afg_auth_pending', JSON.stringify({ providerName, mode }));
+        await init.auth.signInWithRedirect(provider);
+      } catch (err) {
+        showMessage(formType, mapOAuthError(err), 'error');
+      }
+    }
+
     async function handleSocialAuth(providerName, mode) {
       const formType = mode === 'signup' ? 'signup' : 'login';
+      if (window.location.protocol === 'file:') {
+        showMessage(formType, 'Google sign-in requires http://localhost or HTTPS hosting. File protocol is not supported.', 'error');
+        return;
+      }
       const init = ensureFirebaseAuth();
       if (!init.auth) {
         showMessage(formType, init.error, 'error');
@@ -607,8 +634,15 @@
         }
 
         localStorage.setItem('afg_users', JSON.stringify(users));
+        user.authProvider = providerName;
+        user.authSource = 'firebase';
         completeAuth(user, formType, `${providerName} sign ${mode === 'signup' ? 'up' : 'in'} successful! Redirecting...`);
       } catch (err) {
+        const code = err && err.code ? String(err.code) : '';
+        if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/operation-not-supported-in-this-environment') {
+          tryRedirectAuth(providerName, mode);
+          return;
+        }
         showMessage(formType, mapOAuthError(err), 'error');
       }
     }
@@ -683,6 +717,7 @@
         fullname: user.fullname,
         phone: user.phone
       }));
+      localStorage.setItem('afg_auth_source', 'local');
 
       if (remember) {
         localStorage.setItem('afg_remember_user', JSON.stringify({ email: user.email }));
@@ -770,6 +805,7 @@
         fullname: newUser.fullname,
         phone: newUser.phone
       }));
+      localStorage.setItem('afg_auth_source', 'local');
 
       showMessage('signup', 'Account created successfully! Redirecting...', 'success');
       setTimeout(() => window.location.href = 'index.html', 1500);
@@ -788,6 +824,67 @@
         const provider = btn.dataset.provider || btn.textContent.trim();
         handleSocialAuth(provider, 'signup');
       });
+    });
+
+    // Handle OAuth redirect result (fallback for blocked popups or file protocol)
+    window.addEventListener('load', async () => {
+      const pendingRaw = localStorage.getItem('afg_auth_pending');
+      if (!pendingRaw) return;
+
+      const pending = JSON.parse(pendingRaw || 'null');
+      if (!pending || !pending.providerName) return;
+
+      const formType = pending.mode === 'signup' ? 'signup' : 'login';
+      const init = ensureFirebaseAuth();
+      if (!init.auth) return;
+
+      try {
+        const result = await init.auth.getRedirectResult();
+        const authUser = result && result.user ? result.user : null;
+        if (!authUser || !authUser.uid) return;
+
+        const providerName = pending.providerName;
+        const users = JSON.parse(localStorage.getItem('afg_users') || '[]');
+        let user = users.find((u) =>
+          u.oauthUid === authUser.uid ||
+          (authUser.email && u.email === authUser.email)
+        );
+
+        if (!user && pending.mode === 'login') {
+          showMessage('login', 'No account found. Use Sign Up with this provider first.', 'error');
+          await init.auth.signOut();
+          return;
+        }
+
+        if (!user) {
+          user = {
+            id: Date.now(),
+            fullname: authUser.displayName || `${providerName} User`,
+            email: authUser.email || socialEmail(providerName),
+            phone: authUser.phoneNumber || '',
+            oauthProvider: providerName,
+            oauthUid: authUser.uid,
+            avatar: authUser.photoURL || '',
+            createdAt: new Date().toISOString()
+          };
+          users.push(user);
+        } else {
+          user.oauthProvider = providerName;
+          user.oauthUid = authUser.uid;
+          if (!user.fullname && authUser.displayName) user.fullname = authUser.displayName;
+          if ((!user.email || user.email.endsWith('@social.afgjobs.local')) && authUser.email) user.email = authUser.email;
+          if (!user.phone && authUser.phoneNumber) user.phone = authUser.phoneNumber;
+          if (!user.avatar && authUser.photoURL) user.avatar = authUser.photoURL;
+        }
+
+        localStorage.setItem('afg_users', JSON.stringify(users));
+        user.authProvider = providerName;
+        user.authSource = 'firebase';
+        localStorage.removeItem('afg_auth_pending');
+        completeAuth(user, formType, `${providerName} sign ${pending.mode === 'signup' ? 'up' : 'in'} successful! Redirecting...`);
+      } catch (err) {
+        showMessage(formType, mapOAuthError(err), 'error');
+      }
     });
 
     // Auto-fill email if user is remembered
