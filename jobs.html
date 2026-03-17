@@ -58,24 +58,24 @@
   <main id="main-content" class="container">
     <section class="jobs-page-header">
       <div class="header-content">
-        <h2>Available Opportunities</h2>
-        <p class="lead">Browse local freelance and short-term gigs. Contact posters directly.</p>
+        <h2 data-i18n="jobs_title">Available Opportunities</h2>
+        <p class="lead" data-i18n="jobs_lead">Browse local freelance and short-term gigs. Contact posters directly.</p>
       </div>
     </section>
 
     <section class="filters-section card" aria-labelledby="filter-heading">
-      <h3 id="filter-heading" class="visually-hidden">Search Filters</h3>
+      <h3 id="filter-heading" class="visually-hidden" data-i18n="filter_heading">Search Filters</h3>
       <div class="filter-grid">
         <div class="search-box">
-          <label for="jobs-search">Search Keywords</label>
-          <input type="search" id="jobs-search" placeholder="Search title, company, or skills...">
+          <label for="jobs-search" data-i18n="filter_search_label">Search Keywords</label>
+          <input type="search" id="jobs-search" data-i18n-placeholder="filter_search_placeholder" placeholder="Search title, company, or skills...">
         </div>
 
         <div class="category-box">
-          <label for="category-filter">Category</label>
+          <label for="category-filter" data-i18n="filter_category_label">Category</label>
           <select id="category-filter">
-            <option value="All">All Categories</option>
-            <optgroup label="Online Jobs">
+            <option value="All" data-i18n="filter_all_categories">All Categories</option>
+            <optgroup label="Online Jobs" data-i18n-label="filter_online_jobs">
               <option value="Social Media">Social Media</option>
               <option value="Digital Marketing">Digital Marketing</option>
               <option value="Content Writing">Content Writing</option>
@@ -90,7 +90,7 @@
               <option value="Translator">Translator</option>
               <option value="Tutor">Tutor</option>
             </optgroup>
-            <optgroup label="Offline Jobs">
+            <optgroup label="Offline Jobs" data-i18n-label="filter_offline_jobs">
               <option value="Business">Business</option>
               <option value="Retail">Retail</option>
               <option value="Hospitality">Hospitality</option>
@@ -110,15 +110,15 @@
       </div>
 
       <div class="toolbar-footer">
-        <div id="job-count" class="job-count" aria-live="polite">Loading jobs...</div>
+        <div id="job-count" class="job-count" aria-live="polite" data-i18n="job_count_loading">Loading jobs...</div>
         <div class="toolbar-actions">
-          <label for="sort-filter" class="visually-hidden">Sort jobs</label>
+          <label for="sort-filter" class="visually-hidden" data-i18n="sort_label">Sort jobs</label>
           <select id="sort-filter" class="sort-filter" aria-label="Sort jobs">
-            <option value="newest">Newest First</option>
-            <option value="budget-high">Budget: High to Low</option>
-            <option value="budget-low">Budget: Low to High</option>
+            <option value="newest" data-i18n="sort_newest">Newest First</option>
+            <option value="budget-high" data-i18n="sort_budget_high">Budget: High to Low</option>
+            <option value="budget-low" data-i18n="sort_budget_low">Budget: Low to High</option>
           </select>
-          <button id="clear-filters" class="btn outline small" style="display:none">Clear All Filters</button>
+          <button id="clear-filters" class="btn outline small" style="display:none" data-i18n="clear_filters">Clear All Filters</button>
         </div>
       </div>
     </section>
@@ -127,10 +127,10 @@
       <div id="jobs-list" class="featured-grid" aria-live="polite"></div>
 
       <div id="empty-state" class="empty-state-container" style="display:none">
-        <div class="empty-icon">No Results</div>
-        <h4>No jobs found</h4>
-        <p>Try adjusting your search terms or category filters.</p>
-        <a href="post-job.html" class="btn">Be the first to post a job</a>
+        <div class="empty-icon" data-i18n="empty_no_results">No Results</div>
+        <h4 data-i18n="empty_no_jobs">No jobs found</h4>
+        <p data-i18n="empty_adjust">Try adjusting your search terms or category filters.</p>
+        <a href="post-job.html" class="btn" data-i18n="empty_cta">Be the first to post a job</a>
       </div>
     </section>
   </main>
@@ -144,6 +144,9 @@
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>

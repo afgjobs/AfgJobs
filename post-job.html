@@ -54,22 +54,22 @@
 
   <main id="main-content" class="container">
     <section class="post-form">
-      <h2>Post a Job</h2>
-      <p class="lead">Fill in the details below. Submitted jobs will appear on the Jobs page.</p>
+      <h2 data-i18n="post_title">Post a Job</h2>
+      <p class="lead" data-i18n="post_lead">Fill in the details below. Submitted jobs will appear on the Jobs page.</p>
 
       <form id="post-job-form" novalidate>
         <input type="hidden" id="job-id" name="jobId" value="">
-        <label for="poster-type"><span class="required">*</span>Posted by</label>
+        <label for="poster-type"><span class="required">*</span><span data-i18n="label_posted_by">Posted by</span></label>
         <select id="poster-type" name="posterType" required aria-required="true">
-          <option value="Company">Company</option>
-          <option value="Freelancer">Freelancer</option>
+          <option value="Company" data-i18n="option_company">Company</option>
+          <option value="Freelancer" data-i18n="option_freelancer">Freelancer</option>
         </select>
         <small class="error" id="error-posterType" aria-live="polite"></small>
 
-        <label for="category"><span class="required">*</span>Category</label>
+        <label for="category"><span class="required">*</span><span data-i18n="label_category">Category</span></label>
         <select id="category" name="category" required aria-required="true">
-          <option value="" disabled selected>Choose a category</option>
-          <optgroup label="Online Jobs">
+          <option value="" disabled selected data-i18n="option_choose_category">Choose a category</option>
+          <optgroup label="Online Jobs" data-i18n-label="filter_online_jobs">
             <option value="Social Media">Social Media</option>
             <option value="Digital Marketing">Digital Marketing</option>
             <option value="Content Writing">Content Writing</option>
@@ -84,7 +84,7 @@
             <option value="Translator">Translator</option>
             <option value="Tutor">Tutor</option>
           </optgroup>
-          <optgroup label="Offline Jobs">
+          <optgroup label="Offline Jobs" data-i18n-label="filter_offline_jobs">
             <option value="Business">Business</option>
             <option value="Retail">Retail</option>
             <option value="Hospitality">Hospitality</option>
@@ -102,21 +102,21 @@
         </select>
         <small class="error" id="error-category" aria-live="polite"></small>
 
-        <label for="title"><span class="required">*</span>Job Title</label>
-        <input type="text" id="title" name="title" required aria-required="true" placeholder="e.g. Frontend Web Designer (Kabul)" maxlength="120">
+        <label for="title"><span class="required">*</span><span data-i18n="label_job_title">Job Title</span></label>
+        <input type="text" id="title" name="title" required aria-required="true" data-i18n-placeholder="placeholder_job_title" placeholder="e.g. Frontend Web Designer (Kabul)" maxlength="120">
         <small class="error" id="error-title" aria-live="polite"></small>
 
-        <label for="description"><span class="required">*</span>Description <span class="char-count" id="char-count">0/1000</span></label>
-        <textarea id="description" name="description" rows="6" required aria-required="true" placeholder="Describe the work, hours, pay, and required skills (max 1000 chars)" maxlength="1000"></textarea>
+        <label for="description"><span class="required">*</span><span data-i18n="label_description">Description</span> <span class="char-count" id="char-count">0/1000</span></label>
+        <textarea id="description" name="description" rows="6" required aria-required="true" data-i18n-placeholder="placeholder_description" placeholder="Describe the work, hours, pay, and required skills (max 1000 chars)" maxlength="1000"></textarea>
         <small class="error" id="error-description" aria-live="polite"></small>
 
-        <label for="location"><span class="required">*</span>Location</label>
-        <input type="text" id="location" name="location" required aria-required="true" placeholder="City or 'Remote'">
+        <label for="location"><span class="required">*</span><span data-i18n="label_location">Location</span></label>
+        <input type="text" id="location" name="location" required aria-required="true" data-i18n-placeholder="placeholder_location" placeholder="City or 'Remote'">
         <small class="error" id="error-location" aria-live="polite"></small>
 
-        <label for="price"><span class="required">*</span>Price</label>
+        <label for="price"><span class="required">*</span><span data-i18n="label_price">Price</span></label>
         <div class="price-input-group">
-          <input type="number" id="price" name="price" required aria-required="true" placeholder="Enter price amount" min="0" step="0.01">
+          <input type="number" id="price" name="price" required aria-required="true" data-i18n-placeholder="placeholder_price" placeholder="Enter price amount" min="0" step="0.01">
           <select id="currency" name="currency" required aria-required="true">
             <option value="USD">USD (Dollar)</option>
             <option value="AFN">AFN (Afghani)</option>
@@ -131,46 +131,46 @@
 
         <label class="checkbox-label">
           <input type="checkbox" id="is-online" name="isOnline">
-          <span class="checkbox-text">This is an online job</span>
+          <span class="checkbox-text" data-i18n="label_online_job">This is an online job</span>
         </label>
 
-        <label for="sample-link" id="sample-link-label" style="display:none"><span class="required">*</span>Sample link (if online)</label>
-        <input type="url" id="sample-link" name="sampleLink" placeholder="https://example.com/sample" style="display:none">
+        <label for="sample-link" id="sample-link-label" style="display:none"><span class="required">*</span><span data-i18n="label_sample_link">Sample link (if online)</span></label>
+        <input type="url" id="sample-link" name="sampleLink" data-i18n-placeholder="placeholder_sample_link" placeholder="https://example.com/sample" style="display:none">
         <small class="error" id="error-sampleLink" aria-live="polite"></small>
 
-        <label for="contact"><span class="required">*</span>Contact Info (phone or email)</label>
-        <input type="text" id="contact" name="contact" required aria-required="true" placeholder="email@example.com or +93 700 123 456">
+        <label for="contact"><span class="required">*</span><span data-i18n="label_contact">Contact Info (phone or email)</span></label>
+        <input type="text" id="contact" name="contact" required aria-required="true" data-i18n-placeholder="placeholder_contact" placeholder="email@example.com or +93 700 123 456">
         <small class="error" id="error-contact" aria-live="polite"></small>
 
-        <label for="portfolio-link">Portfolio Link (optional)</label>
-        <input type="url" id="portfolio-link" name="portfolioLink" placeholder="https://instagram.com/username or https://youtube.com/c/yourprofile" aria-describedby="portfolio-help">
-        <small id="portfolio-help" class="help-text">Instagram, TikTok, YouTube, or portfolio website</small>
+        <label for="portfolio-link" data-i18n="label_portfolio">Portfolio Link (optional)</label>
+        <input type="url" id="portfolio-link" name="portfolioLink" data-i18n-placeholder="placeholder_portfolio" placeholder="https://instagram.com/username or https://youtube.com/c/yourprofile" aria-describedby="portfolio-help">
+        <small id="portfolio-help" class="help-text" data-i18n="portfolio_help">Instagram, TikTok, YouTube, or portfolio website</small>
         <small class="error" id="error-portfolioLink" aria-live="polite"></small>
 
-        <label>Media Upload (optional)</label>
+        <label data-i18n="label_media_upload">Media Upload (optional)</label>
         <div class="media-upload-area" id="media-upload-area">
           <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          <p class="upload-text">Drag and drop images or videos here</p>
-          <p class="upload-subtext">or <button type="button" id="upload-btn" class="upload-link">click to browse</button></p>
-          <p class="upload-limit">Max 2MB per file (images or short videos)</p>
+          <p class="upload-text" data-i18n="upload_text">Drag and drop images or videos here</p>
+          <p class="upload-subtext"><span data-i18n="upload_subtext">or</span> <button type="button" id="upload-btn" class="upload-link" data-i18n="upload_browse">click to browse</button></p>
+          <p class="upload-limit" data-i18n="upload_limit">Max 2MB per file (images or short videos)</p>
         </div>
         <input type="file" id="media-upload-input" name="mediaFile" accept="image/*,video/*" style="display:none">
         <div id="media-preview-container" class="media-preview-container" style="display:none">
           <div class="media-preview">
             <img id="media-preview-img" class="media-preview-img" style="display:none" alt="Preview image">
             <video id="media-preview-video" class="media-preview-video" style="display:none" controls></video>
-            <button type="button" id="media-remove-btn" class="media-remove-btn">Remove</button>
+            <button type="button" id="media-remove-btn" class="media-remove-btn" data-i18n="media_remove">Remove</button>
           </div>
           <p id="media-info" class="media-info"></p>
         </div>
         <small class="error" id="error-mediaFile" aria-live="polite"></small>
 
-        <button type="submit" class="btn" id="submit-btn">Submit Job</button>
-        <button type="button" id="cancel-edit" class="btn outline" style="display:none">Cancel</button>
+        <button type="submit" class="btn" id="submit-btn" data-i18n="submit_job">Submit Job</button>
+        <button type="button" id="cancel-edit" class="btn outline" style="display:none" data-i18n="cancel">Cancel</button>
       </form>
 
       <p id="form-msg" class="form-msg" aria-live="polite"></p>
@@ -186,6 +186,9 @@
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>

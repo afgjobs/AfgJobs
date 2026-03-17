@@ -361,7 +361,7 @@
     <div id="job-detail-hero" class="job-detail-hero" style="display: none;">
       <div class="container">
         <div class="job-header-content">
-          <a href="jobs.html" class="back-link">Back to Jobs</a>
+          <a href="jobs.html" class="back-link" data-i18n="back_to_jobs">Back to Jobs</a>
           <h1 id="job-title">Loading...</h1>
           <div class="job-meta">
             <div class="meta-item" id="category-meta">Category</div>
@@ -373,9 +373,9 @@
     </div>
 
     <div id="job-not-found" class="container job-not-found" style="display: none;">
-      <h2>Job Not Found</h2>
-      <p>This job no longer exists or the link is broken.</p>
-      <a href="jobs.html" class="btn">Browse All Jobs</a>
+      <h2 data-i18n="job_not_found_title">Job Not Found</h2>
+      <p data-i18n="job_not_found_body">This job no longer exists or the link is broken.</p>
+      <a href="jobs.html" class="btn" data-i18n="job_not_found_cta">Browse All Jobs</a>
     </div>
 
     <div id="job-content" class="container job-detail-content" style="display: none;">
@@ -392,21 +392,21 @@
 
         <!-- Description Section -->
         <div class="job-section">
-          <h3>Job Description</h3>
+          <h3 data-i18n="job_description_heading">Job Description</h3>
           <p class="description-text" id="job-description">Loading description...</p>
         </div>
 
         <!-- Portfolio Section -->
         <div id="portfolio-section" class="portfolio-link-section" style="display: none;">
-          <h4>Portfolio / Social Media</h4>
-          <a id="portfolio-link-text" href="#" target="_blank" rel="noopener">View portfolio</a>
+          <h4 data-i18n="portfolio_heading">Portfolio / Social Media</h4>
+          <a id="portfolio-link-text" href="#" target="_blank" rel="noopener" data-i18n="portfolio_view">View portfolio</a>
         </div>
 
         <!-- Online Job Details -->
         <div id="online-job-section" class="job-section" style="display: none;">
-          <h3>Online Job Details</h3>
-          <p><strong>Sample Link:</strong></p>
-          <a id="sample-link-text" href="#" target="_blank" rel="noopener" style="color: var(--primary); word-break: break-all;">View sample</a>
+          <h3 data-i18n="online_job_heading">Online Job Details</h3>
+          <p><strong data-i18n="sample_link_label">Sample Link:</strong></p>
+          <a id="sample-link-text" href="#" target="_blank" rel="noopener" style="color: var(--primary); word-break: break-all;" data-i18n="sample_view">View sample</a>
         </div>
       </div>
 
@@ -414,7 +414,7 @@
       <aside class="job-sidebar">
         <!-- Budget Card -->
         <div class="budget-card">
-          <div class="budget-label">Budget</div>
+          <div class="budget-label" data-i18n="budget_label">Budget</div>
           <div class="budget-amount" id="job-budget">$0</div>
           <div class="budget-type" id="job-currency">USD</div>
           <div class="tags-container">
@@ -425,37 +425,60 @@
 
         <!-- Contact Card -->
         <div class="contact-card">
-          <h4>Get in Touch</h4>
+          <h4 data-i18n="contact_heading">Get in Touch</h4>
           <div class="contact-info" id="contact-display">Loading contact...</div>
           <div class="contact-buttons">
             <a id="contact-primary-btn" href="#" class="contact-btn primary">
               <span id="contact-btn-text">Contact</span>
             </a>
-            <button id="copy-contact-btn" class="contact-btn secondary">
+            <button id="copy-contact-btn" class="contact-btn secondary" data-i18n="copy_contact">
               Copy Contact
             </button>
           </div>
         </div>
 
+        <!-- Report Card -->
+        <div class="job-section" id="report-section">
+          <h4 style="margin-bottom: 0.75rem;" data-i18n="report_heading">Report This Job</h4>
+          <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;" data-i18n="report_subtext">
+            If this looks unsafe, illegal, or abusive, report it for review.
+          </p>
+          <form id="report-form" class="report-form">
+            <label for="report-reason" data-i18n="report_reason_label">Reason</label>
+            <select id="report-reason" name="reason" required>
+              <option value="" data-i18n="report_reason_select">Select a reason</option>
+              <option value="Illegal activity" data-i18n="report_reason_illegal">Illegal activity</option>
+              <option value="Scam or fraud" data-i18n="report_reason_scam">Scam or fraud</option>
+              <option value="Hate or harassment" data-i18n="report_reason_hate">Hate or harassment</option>
+              <option value="Adult content" data-i18n="report_reason_adult">Adult content</option>
+              <option value="Other" data-i18n="report_reason_other">Other</option>
+            </select>
+            <label for="report-details" data-i18n="report_details_label">Details (optional)</label>
+            <textarea id="report-details" name="details" rows="3" maxlength="500" data-i18n-placeholder="report_details_placeholder" placeholder="Add any details to help us review."></textarea>
+            <button type="submit" class="btn danger" data-i18n="report_submit">Report Job</button>
+            <p id="report-msg" class="feedback-msg" aria-live="polite"></p>
+          </form>
+        </div>
+
         <!-- Share Card -->
         <div class="job-section" style="text-align: center;">
-          <h4 style="margin-bottom: 1rem;">Share This Job</h4>
+          <h4 style="margin-bottom: 1rem;" data-i18n="share_heading">Share This Job</h4>
           <div class="contact-buttons">
-            <button id="share-whatsapp-btn" class="contact-btn secondary">WhatsApp</button>
-            <button id="share-copy-link-btn" class="contact-btn secondary">Copy Link</button>
+            <button id="share-whatsapp-btn" class="contact-btn secondary" data-i18n="share_whatsapp">WhatsApp</button>
+            <button id="share-copy-link-btn" class="contact-btn secondary" data-i18n="share_copy">Copy Link</button>
           </div>
         </div>
 
         <!-- Owner Actions -->
         <div id="owner-actions" class="job-section" style="display: none; text-align: center;">
-          <h4 style="margin-bottom: 1rem;">Manage Your Job</h4>
-          <button id="delete-job-btn" class="btn danger" type="button">Delete This Job</button>
+          <h4 style="margin-bottom: 1rem;" data-i18n="owner_manage">Manage Your Job</h4>
+          <button id="delete-job-btn" class="btn danger" type="button" data-i18n="delete_job">Delete This Job</button>
         </div>
 
         <!-- Posted Date -->
         <div class="job-section" style="text-align: center;">
           <p style="color: var(--muted); font-size: 0.9rem;">
-            Posted on <strong id="posted-date">-</strong>
+            <span data-i18n="posted_on">Posted on</span> <strong id="posted-date">-</strong>
           </p>
         </div>
       </aside>
@@ -471,6 +494,9 @@
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <script src="script.js" defer></script>
   <script defer>
     // Job Detail Page Logic
@@ -480,10 +506,23 @@
         return params.get('id');
       },
 
-      getJobById(id) {
+      async getJobById(id) {
         if (!id) return null;
+        if (!FirebaseStore.enabled) {
+          await FirebaseStore.init();
+        }
+        if (FirebaseStore.enabled && FirebaseStore.db) {
+          try {
+            const doc = await FirebaseStore.db.collection('jobs').doc(String(id)).get();
+            if (!doc.exists) return null;
+            return { id: doc.id, ...doc.data() };
+          } catch {
+            return null;
+          }
+        }
+
         const allJobs = Storage.getAllJobs();
-        return allJobs.find(job => job.id === Number(id));
+        return allJobs.find(job => String(job.id) === String(id));
       },
 
       formatDate(isoString) {
@@ -511,9 +550,9 @@
 
         // Header
         document.getElementById('job-title').textContent = job.title || 'Untitled';
-        document.getElementById('category-meta').textContent = `Category: ${job.category || 'Other'}`;
-        document.getElementById('location-meta').textContent = `Location: ${job.location || 'Remote'}`;
-        document.getElementById('type-meta').textContent = `Posted by: ${job.posterType || 'Poster'}`;
+        document.getElementById('category-meta').textContent = `${LanguageManager.t('detail_category_label')}: ${job.category || 'Other'}`;
+        document.getElementById('location-meta').textContent = `${LanguageManager.t('detail_location_label')}: ${job.location || 'Remote'}`;
+        document.getElementById('type-meta').textContent = `${LanguageManager.t('detail_posted_by_label')}: ${job.posterType || 'Poster'}`;
 
         // Description
         document.getElementById('job-description').textContent = job.description || 'No description provided';
@@ -531,10 +570,10 @@
 
         if (isEmail) {
           document.getElementById('contact-primary-btn').href = `mailto:${encodeURIComponent(contact)}`;
-          document.getElementById('contact-btn-text').textContent = 'Email';
+          document.getElementById('contact-btn-text').textContent = LanguageManager.t('contact_btn_email');
         } else {
           document.getElementById('contact-primary-btn').href = `tel:${contact.replace(/[^\d+]/g, '')}`;
-          document.getElementById('contact-btn-text').textContent = 'Call';
+          document.getElementById('contact-btn-text').textContent = LanguageManager.t('contact_btn_call');
         }
 
         // Media
@@ -601,15 +640,15 @@
           ownerSection.style.display = isOwner ? 'block' : 'none';
         }
         if (deleteBtn) {
-          deleteBtn.onclick = () => {
+          deleteBtn.onclick = async () => {
             if (!isOwner) {
-              alert('You can only delete your own jobs.');
+              alert(LanguageManager.t('delete_not_owner'));
               return;
             }
-            if (!confirm('Are you sure you want to delete this job?')) return;
-            const result = Storage.deleteJobById(job.id, currentUser);
+            if (!confirm(LanguageManager.t('delete_confirm'))) return;
+            const result = await Storage.deleteJobByIdAsync(job.id, currentUser);
             if (!result.ok) {
-              alert('Unable to delete this job.');
+              alert(LanguageManager.t('delete_failed'));
               return;
             }
             window.location.href = 'jobs.html';
@@ -643,9 +682,9 @@
           copyText(contact).then(() => {
             const btn = document.getElementById('copy-contact-btn');
             const original = btn.textContent;
-            btn.textContent = 'Copied!';
+            btn.textContent = LanguageManager.t('copy_success');
             setTimeout(() => btn.textContent = original, 2000);
-          }).catch(() => alert('Failed to copy'));
+          }).catch(() => alert(LanguageManager.t('copy_failed')));
         });
 
         // WhatsApp share
@@ -662,16 +701,64 @@
           copyText(window.location.href).then(() => {
             const btn = document.getElementById('share-copy-link-btn');
             const original = btn.textContent;
-            btn.textContent = 'Link Copied!';
+            btn.textContent = LanguageManager.t('copy_link_success');
             setTimeout(() => btn.textContent = original, 2000);
-          }).catch(() => alert('Failed to copy link'));
+          }).catch(() => alert(LanguageManager.t('copy_link_failed')));
         });
       },
 
-      init() {
+      setupReportForm(job) {
+        const form = document.getElementById('report-form');
+        const msgEl = document.getElementById('report-msg');
+        if (!form || !job) return;
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+
+          const reason = String(document.getElementById('report-reason')?.value || '').trim();
+          const details = String(document.getElementById('report-details')?.value || '').trim();
+
+          if (!reason) {
+            if (msgEl) {
+              msgEl.textContent = LanguageManager.t('report_reason_required');
+              msgEl.className = 'feedback-msg error';
+            }
+            return;
+          }
+
+          const currentUser = Storage.getCurrentUser();
+          const payload = {
+            jobId: job.id,
+            jobTitle: job.title || 'Untitled',
+            reason,
+            details,
+            reporterId: currentUser?.id || null,
+            reporterEmail: currentUser?.email || null,
+            reporterName: currentUser?.fullname || null
+          };
+
+          const ok = Storage.saveReport(payload);
+          if (!ok) {
+            if (msgEl) {
+              msgEl.textContent = LanguageManager.t('report_submit_fail');
+              msgEl.className = 'feedback-msg error';
+            }
+            return;
+          }
+
+          form.reset();
+          if (msgEl) {
+            msgEl.textContent = LanguageManager.t('report_submit_success');
+            msgEl.className = 'feedback-msg success';
+          }
+        });
+      },
+
+      async init() {
         const jobId = this.getJobIdFromUrl();
-        const job = this.getJobById(jobId);
+        const job = await this.getJobById(jobId);
         this.renderJobDetail(job);
+        this.setupReportForm(job);
       }
     };
 

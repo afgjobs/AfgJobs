@@ -12,7 +12,9 @@ const APP_KEYS = {
     SETTINGS: 'afg_settings',
     FEEDBACK: 'afg_feedback',
     NEWSLETTER: 'afg_newsletter',
-    SEEKER_POSTS: 'afg_job_seeker_posts'
+    SEEKER_POSTS: 'afg_job_seeker_posts',
+    REPORTS: 'afg_job_reports',
+    LANGUAGE: 'afg_language'
 };
 
 const DEFAULT_SETTINGS = {
@@ -138,6 +140,21 @@ const Utils = {
     }
 };
 
+const FirebaseStore = {
+    enabled: false,
+    db: null,
+
+    async init() {
+        if (!window.firebase || !window.firebase.firestore) return;
+        try {
+            this.db = window.firebase.firestore();
+            this.enabled = true;
+        } catch {
+            this.enabled = false;
+        }
+    }
+};
+
 const Storage = {
     getAllJobs() {
         try {
@@ -164,6 +181,26 @@ const Storage = {
         }
     },
 
+    async getAllJobsAsync() {
+        if (FirebaseStore.enabled && FirebaseStore.db) {
+            try {
+                const snapshot = await FirebaseStore.db
+                    .collection('jobs')
+                    .orderBy('createdAtMs', 'desc')
+                    .get();
+                const jobs = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                if (jobs.length > 0) return jobs;
+            } catch {
+                // Fall back to local storage below.
+            }
+        }
+
+        return this.getAllJobs();
+    },
+
     saveJob(job) {
         const jobs = this.getAllJobs();
 
@@ -176,9 +213,27 @@ const Storage = {
             localStorage.setItem(APP_KEYS.JOBS, JSON.stringify(jobs));
             return true;
         } catch {
-            alert('Storage is full. Please use a smaller media file or remove old posts.');
+            alert(LanguageManager.t('alert_storage_full'));
             return false;
         }
+    },
+
+    async saveJobAsync(job) {
+        if (FirebaseStore.enabled && FirebaseStore.db) {
+            try {
+                const payload = {
+                    ...job,
+                    createdAtMs: Date.now(),
+                    createdAt: new Date().toISOString()
+                };
+                const docRef = await FirebaseStore.db.collection('jobs').add(payload);
+                return { ok: true, id: docRef.id };
+            } catch {
+                return { ok: false };
+            }
+        }
+
+        return this.saveJob(job) ? { ok: true } : { ok: false };
     },
 
     getUsers() {
@@ -234,6 +289,39 @@ const Storage = {
         const updated = jobs.filter((job) => String(job.id) !== String(jobId));
         localStorage.setItem(APP_KEYS.JOBS, JSON.stringify(updated));
         return { ok: true };
+    },
+
+    async deleteJobByIdAsync(jobId, user) {
+        if (FirebaseStore.enabled && FirebaseStore.db) {
+            try {
+                const docRef = FirebaseStore.db.collection('jobs').doc(String(jobId));
+                const snapshot = await docRef.get();
+                if (!snapshot.exists) return { ok: false, reason: 'not-found' };
+                const data = snapshot.data();
+                if (!Utils.isJobOwner(data, user)) return { ok: false, reason: 'not-owner' };
+                await docRef.delete();
+                return { ok: true };
+            } catch {
+                return { ok: false, reason: 'error' };
+            }
+        }
+
+        return this.deleteJobById(jobId, user);
+    },
+
+    saveReport(report) {
+        try {
+            const reports = Utils.readJson(APP_KEYS.REPORTS, []);
+            reports.unshift({
+                ...report,
+                id: Date.now(),
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem(APP_KEYS.REPORTS, JSON.stringify(reports.slice(0, 500)));
+            return true;
+        } catch {
+            return false;
+        }
     }
 };
 
@@ -245,12 +333,12 @@ const Renderer = {
         const posterType = Utils.escapeHtml(job.posterType || 'Poster');
         const description = Utils.escapeHtml((job.description || '').slice(0, 100));
         const budgetHtml = Number.isFinite(Number(job.price))
-            ? `<p class="budget">Budget: ${Utils.escapeHtml(job.currency || 'USD')} ${Utils.escapeHtml(job.price)}</p>`
+            ? `<p class="budget">${LanguageManager.t('job_budget_label')}: ${Utils.escapeHtml(job.currency || 'USD')} ${Utils.escapeHtml(job.price)}</p>`
             : '';
 
         const sampleUrl = Utils.safeHttpUrl(job.sampleLink);
         const sampleHtml = job.isOnline && sampleUrl
-            ? `<p><a href="${sampleUrl}" target="_blank" rel="noopener noreferrer">View sample link</a></p>`
+            ? `<p><a href="${sampleUrl}" target="_blank" rel="noopener noreferrer">${LanguageManager.t('view_sample_link')}</a></p>`
             : '';
 
         const mediaHtml = job.media
@@ -266,13 +354,13 @@ const Renderer = {
                     <div class="card-body">
                         <span class="badge">${category}</span>
                         <h3>${title}</h3>
-                        <p class="location">Location: ${location}</p>
+                        <p class="location">${LanguageManager.t('job_location_label')}: ${location}</p>
                         <p class="description">${description}${(job.description || '').length > 100 ? '...' : ''}</p>
                         ${budgetHtml}
                         ${sampleHtml}
                         <div class="card-footer">
                             <span class="poster">${posterType}</span>
-                            <span class="btn outline small" style="pointer-events: none;">View Details</span>
+                            <span class="btn outline small" style="pointer-events: none;">${LanguageManager.t('view_details')}</span>
                         </div>
                     </div>
                 </article>
@@ -290,18 +378,18 @@ const Renderer = {
         if (!Array.isArray(jobs) || jobs.length === 0) {
             container.innerHTML = '';
             if (emptyState) emptyState.style.display = 'block';
-            if (countDisplay) countDisplay.innerText = '0 jobs found';
+            if (countDisplay) countDisplay.innerText = LanguageManager.formatJobsCount(0);
             return;
         }
 
         if (emptyState) emptyState.style.display = 'none';
-        if (countDisplay) countDisplay.innerText = `${jobs.length} jobs found`;
+        if (countDisplay) countDisplay.innerText = LanguageManager.formatJobsCount(jobs.length);
         container.innerHTML = jobs.map((job) => this.createJobCard(job)).join('');
     }
 };
 
 const SearchEngine = {
-    init() {
+    async init() {
         const searchInput = document.getElementById('jobs-search') || document.getElementById('hero-search');
         const categoryFilter = document.getElementById('category-filter');
         const sortFilter = document.getElementById('sort-filter');
@@ -311,11 +399,11 @@ const SearchEngine = {
 
         const settings = Storage.getSettings();
 
-        const performSearch = () => {
+        const performSearch = async () => {
             const query = String(searchInput?.value || '').toLowerCase().trim();
             const category = categoryFilter?.value || 'All';
             const sortBy = sortFilter?.value || 'newest';
-            const allJobs = Storage.getAllJobs();
+            const allJobs = await Storage.getAllJobsAsync();
 
             const filtered = allJobs.filter((job) => {
                 const title = String(job.title || '').toLowerCase();
@@ -376,7 +464,7 @@ const SearchEngine = {
             sortFilter.value = settings.jobSort;
         }
 
-        performSearch();
+        await performSearch();
     }
 };
 
@@ -399,6 +487,476 @@ const ThemeManager = {
     }
 };
 
+const LayoutManager = {
+    ensureNavRight() {
+        const navRow = document.querySelector('.nav-row');
+        if (!navRow) return;
+
+        let navRight = navRow.querySelector('.nav-right');
+        if (!navRight) {
+            navRight = document.createElement('div');
+            navRight.className = 'nav-right';
+            navRow.appendChild(navRight);
+        }
+
+        const navAuth = navRow.querySelector('.nav-auth');
+        const themeToggle = document.getElementById('themeToggle');
+
+        if (navAuth && navAuth.parentElement !== navRight) {
+            navRight.appendChild(navAuth);
+        }
+        if (themeToggle && themeToggle.parentElement !== navRight) {
+            navRight.appendChild(themeToggle);
+        }
+    }
+};
+
+const LanguageManager = {
+    translations: {
+        en: {
+            nav_home: 'Home',
+            nav_jobs: 'Jobs',
+            nav_about: 'About',
+            nav_contact: 'Contact',
+            nav_post_job: 'Post Job',
+            auth_sign_in: 'Sign In',
+            auth_profile: 'My Profile',
+            auth_settings: 'Settings',
+            auth_logout: 'Logout',
+            theme_toggle: 'Toggle Theme',
+            language_label: 'Language',
+            hero_title: 'Find local freelance work across Afghanistan',
+            hero_lead: 'Browse short-term and freelance gigs posted by local businesses and individuals. Post your own job to reach local freelancers.',
+            hero_browse: 'Browse Jobs',
+            hero_post: 'Post a Job',
+            hero_search_placeholder: 'Quick search jobs or categories (e.g. Web Designer)',
+            hero_search_btn: 'Search',
+            tagline: 'Fast local jobs for Afghans',
+            welcome_prefix: 'Welcome, ',
+            jobs_title: 'Available Opportunities',
+            jobs_lead: 'Browse local freelance and short-term gigs. Contact posters directly.',
+            filter_search_label: 'Search Keywords',
+            filter_search_placeholder: 'Search title, company, or skills...',
+            filter_category_label: 'Category',
+            filter_heading: 'Search Filters',
+            sort_label: 'Sort jobs',
+            filter_all_categories: 'All Categories',
+            filter_online_jobs: 'Online Jobs',
+            filter_offline_jobs: 'Offline Jobs',
+            sort_newest: 'Newest First',
+            sort_budget_high: 'Budget: High to Low',
+            sort_budget_low: 'Budget: Low to High',
+            clear_filters: 'Clear All Filters',
+            job_count_loading: 'Loading jobs...',
+            empty_no_results: 'No Results',
+            empty_no_jobs: 'No jobs found',
+            empty_adjust: 'Try adjusting your search terms or category filters.',
+            empty_cta: 'Be the first to post a job',
+            back_to_jobs: 'Back to Jobs',
+            job_description_heading: 'Job Description',
+            portfolio_heading: 'Portfolio / Social Media',
+            online_job_heading: 'Online Job Details',
+            sample_link_label: 'Sample Link:',
+            budget_label: 'Budget',
+            contact_heading: 'Get in Touch',
+            contact_btn_email: 'Email',
+            contact_btn_call: 'Call',
+            copy_contact: 'Copy Contact',
+            share_heading: 'Share This Job',
+            share_whatsapp: 'WhatsApp',
+            share_copy: 'Copy Link',
+            owner_manage: 'Manage Your Job',
+            delete_job: 'Delete This Job',
+            posted_on: 'Posted on',
+            report_heading: 'Report This Job',
+            report_subtext: 'If this looks unsafe, illegal, or abusive, report it for review.',
+            report_reason_label: 'Reason',
+            report_details_label: 'Details (optional)',
+            report_reason_select: 'Select a reason',
+            report_reason_illegal: 'Illegal activity',
+            report_reason_scam: 'Scam or fraud',
+            report_reason_hate: 'Hate or harassment',
+            report_reason_adult: 'Adult content',
+            report_reason_other: 'Other',
+            report_details_placeholder: 'Add any details to help us review.',
+            report_reason_required: 'Please choose a reason.',
+            report_submit_fail: 'Could not submit the report. Please try again.',
+            report_submit_success: 'Thanks. Your report was submitted.',
+            portfolio_view: 'View portfolio',
+            sample_view: 'View sample',
+            view_sample_link: 'View sample link',
+            job_location_label: 'Location',
+            job_budget_label: 'Budget',
+            view_details: 'View Details',
+            job_not_found_title: 'Job Not Found',
+            job_not_found_body: 'This job no longer exists or the link is broken.',
+            job_not_found_cta: 'Browse All Jobs',
+            detail_category_label: 'Category',
+            detail_location_label: 'Location',
+            detail_posted_by_label: 'Posted by',
+            delete_not_owner: 'You can only delete your own jobs.',
+            delete_confirm: 'Are you sure you want to delete this job?',
+            delete_failed: 'Unable to delete this job.',
+            copy_success: 'Copied!',
+            copy_failed: 'Failed to copy',
+            copy_link_success: 'Link Copied!',
+            copy_link_failed: 'Failed to copy link',
+            logout_confirm: 'Are you sure you want to log out?',
+            report_delete_confirm: 'Delete this report?',
+            report_clear_confirm: 'Clear all reports in this browser?',
+            report_submit: 'Report Job',
+            post_title: 'Post a Job',
+            post_lead: 'Fill in the details below. Submitted jobs will appear on the Jobs page.',
+            label_posted_by: 'Posted by',
+            option_company: 'Company',
+            option_freelancer: 'Freelancer',
+            label_category: 'Category',
+            option_choose_category: 'Choose a category',
+            label_job_title: 'Job Title',
+            placeholder_job_title: 'e.g. Frontend Web Designer (Kabul)',
+            label_description: 'Description',
+            placeholder_description: 'Describe the work, hours, pay, and required skills (max 1000 chars)',
+            label_location: 'Location',
+            placeholder_location: "City or 'Remote'",
+            label_price: 'Price',
+            placeholder_price: 'Enter price amount',
+            label_online_job: 'This is an online job',
+            label_sample_link: 'Sample link (if online)',
+            placeholder_sample_link: 'https://example.com/sample',
+            label_contact: 'Contact Info (phone or email)',
+            placeholder_contact: 'email@example.com or +93 700 123 456',
+            label_portfolio: 'Portfolio Link (optional)',
+            placeholder_portfolio: 'https://instagram.com/username or https://youtube.com/c/yourprofile',
+            portfolio_help: 'Instagram, TikTok, YouTube, or portfolio website',
+            label_media_upload: 'Media Upload (optional)',
+            upload_text: 'Drag and drop images or videos here',
+            upload_subtext: 'or',
+            upload_browse: 'click to browse',
+            upload_limit: 'Max 2MB per file (images or short videos)',
+            media_remove: 'Remove',
+            submit_job: 'Submit Job',
+            cancel: 'Cancel',
+            alert_storage_full: 'Storage is full. Please use a smaller media file or remove old posts.',
+            alert_required_fields: 'Please fill in all required fields.',
+            alert_invalid_price: 'Please enter a valid price.',
+            alert_description_short: 'Description must be at least 20 characters.',
+            alert_invalid_contact: 'Please enter a valid email or phone number.',
+            alert_sample_link_required: 'Please add a sample link for online jobs.',
+            alert_sample_link_format: 'Sample link must start with http:// or https://',
+            alert_portfolio_link_format: 'Portfolio link must start with http:// or https://',
+            alert_invalid_media_type: 'Please upload an image or video file.',
+            alert_media_too_large: 'File is too large. Please choose a file under 2MB.',
+            feedback_enter_message: 'Please enter your feedback.',
+            feedback_invalid_email: 'Please enter a valid email address.',
+            feedback_thanks: 'Thank you for your feedback.',
+            feedback_save_fail: 'Could not save feedback. Please try again.',
+            newsletter_invalid_email: 'Enter a valid email address.',
+            newsletter_subscribed: 'You are subscribed. Thanks for joining.',
+            seeker_complete_fields: 'Please complete all fields.',
+            seeker_min_skills: 'Please add at least 20 characters about your skills.',
+            seeker_invalid_contact: 'Contact must be a valid email or phone number.',
+            seeker_success: 'Your job-seeker profile was posted successfully.',
+            seeker_save_fail: 'Could not save your profile. Please try again.',
+            post_success: 'Job posted successfully. Redirecting...',
+            post_fail: 'Unable to post the job right now. Please try again.',
+            sign_in_required_title: 'Please sign in to post a job',
+            sign_in_required_body: 'You need an account before posting a job.',
+            sign_in_required_cta: 'Sign In / Create Account',
+            jobs_found_count: '{count} jobs found'
+        },
+        fa: {
+            nav_home: 'خانه',
+            nav_jobs: 'کارها',
+            nav_about: 'درباره',
+            nav_contact: 'تماس',
+            nav_post_job: 'ثبت کار',
+            auth_sign_in: 'ورود',
+            auth_profile: 'پروفایل من',
+            auth_settings: 'تنظیمات',
+            auth_logout: 'خروج',
+            theme_toggle: 'تغییر پوسته',
+            language_label: 'زبان',
+            hero_title: 'کارهای فریلنس محلی در سراسر افغانستان پیدا کنید',
+            hero_lead: 'کارهای کوتاه‌مدت و فریلنس را که توسط کسب‌وکارها و افراد محلی ثبت شده‌اند ببینید. کار خودتان را ثبت کنید تا به فریلنس‌های محلی برسید.',
+            hero_browse: 'مشاهده کارها',
+            hero_post: 'ثبت کار',
+            hero_search_placeholder: 'جستجوی سریع کارها یا دسته‌بندی‌ها (مثلاً طراح وب)',
+            hero_search_btn: 'جستجو',
+            tagline: 'کارهای محلی سریع برای افغان‌ها',
+            welcome_prefix: 'خوش آمدید، ',
+            jobs_title: 'فرصت‌های موجود',
+            jobs_lead: 'کارهای فریلنس و کوتاه‌مدت محلی را ببینید. مستقیم با آگهی‌دهنده تماس بگیرید.',
+            filter_search_label: 'کلیدواژه جستجو',
+            filter_search_placeholder: 'عنوان، شرکت یا مهارت‌ها را جستجو کنید...',
+            filter_category_label: 'دسته‌بندی',
+            filter_heading: 'فیلترهای جستجو',
+            sort_label: 'مرتب‌سازی کارها',
+            filter_all_categories: 'همه دسته‌بندی‌ها',
+            filter_online_jobs: 'کارهای آنلاین',
+            filter_offline_jobs: 'کارهای حضوری',
+            sort_newest: 'جدیدترین',
+            sort_budget_high: 'بودجه: زیاد به کم',
+            sort_budget_low: 'بودجه: کم به زیاد',
+            clear_filters: 'پاک کردن فیلترها',
+            job_count_loading: 'در حال بارگذاری کارها...',
+            empty_no_results: 'بدون نتیجه',
+            empty_no_jobs: 'هیچ کاری پیدا نشد',
+            empty_adjust: 'واژه‌های جستجو یا فیلتر دسته‌بندی را تغییر دهید.',
+            empty_cta: 'اولین نفر باشید که کار ثبت می‌کند',
+            back_to_jobs: 'بازگشت به کارها',
+            job_description_heading: 'شرح کار',
+            portfolio_heading: 'نمونه‌کار / شبکه‌های اجتماعی',
+            online_job_heading: 'جزئیات کار آنلاین',
+            sample_link_label: 'نمونه لینک:',
+            budget_label: 'بودجه',
+            contact_heading: 'راه‌های تماس',
+            contact_btn_email: 'ایمیل',
+            contact_btn_call: 'تماس',
+            copy_contact: 'کپی تماس',
+            share_heading: 'اشتراک‌گذاری این کار',
+            share_whatsapp: 'واتساپ',
+            share_copy: 'کپی لینک',
+            owner_manage: 'مدیریت آگهی شما',
+            delete_job: 'حذف این آگهی',
+            posted_on: 'ارسال‌شده در',
+            report_heading: 'گزارش این آگهی',
+            report_subtext: 'اگر این آگهی ناامن، غیرقانونی یا توهین‌آمیز است گزارش دهید.',
+            report_reason_label: 'دلیل',
+            report_details_label: 'جزئیات (اختیاری)',
+            report_reason_select: 'یک دلیل انتخاب کنید',
+            report_reason_illegal: 'فعالیت غیرقانونی',
+            report_reason_scam: 'کلاه‌برداری',
+            report_reason_hate: 'نفرت یا آزار',
+            report_reason_adult: 'محتوای بزرگسالان',
+            report_reason_other: 'دیگر',
+            report_details_placeholder: 'جزئیات بیشتری برای بررسی بنویسید.',
+            report_reason_required: 'لطفاً یک دلیل انتخاب کنید.',
+            report_submit_fail: 'ارسال گزارش ممکن نشد. لطفاً دوباره تلاش کنید.',
+            report_submit_success: 'سپاس. گزارش شما ثبت شد.',
+            portfolio_view: 'مشاهده نمونه‌کار',
+            sample_view: 'مشاهده نمونه',
+            view_sample_link: 'مشاهده نمونه لینک',
+            job_location_label: 'موقعیت',
+            job_budget_label: 'بودجه',
+            view_details: 'مشاهده جزئیات',
+            job_not_found_title: 'آگهی پیدا نشد',
+            job_not_found_body: 'این آگهی دیگر موجود نیست یا لینک خراب است.',
+            job_not_found_cta: 'مشاهده همه کارها',
+            detail_category_label: 'دسته‌بندی',
+            detail_location_label: 'موقعیت',
+            detail_posted_by_label: 'ثبت‌شده توسط',
+            delete_not_owner: 'فقط می‌توانید آگهی‌های خودتان را حذف کنید.',
+            delete_confirm: 'آیا مطمئن هستید که می‌خواهید این آگهی را حذف کنید؟',
+            delete_failed: 'حذف آگهی ممکن نشد.',
+            copy_success: 'کپی شد!',
+            copy_failed: 'کپی ناموفق بود',
+            copy_link_success: 'لینک کپی شد!',
+            copy_link_failed: 'کپی لینک ناموفق بود',
+            logout_confirm: 'آیا مطمئن هستید که می‌خواهید خارج شوید؟',
+            report_delete_confirm: 'این گزارش حذف شود؟',
+            report_clear_confirm: 'همه گزارش‌ها در این مرورگر پاک شود؟',
+            report_submit: 'گزارش آگهی',
+            post_title: 'ثبت کار',
+            post_lead: 'جزئیات را پر کنید. آگهی‌ها در صفحه کارها نمایش داده می‌شوند.',
+            label_posted_by: 'ثبت‌شده توسط',
+            option_company: 'شرکت',
+            option_freelancer: 'فریلنس',
+            label_category: 'دسته‌بندی',
+            option_choose_category: 'یک دسته‌بندی انتخاب کنید',
+            label_job_title: 'عنوان کار',
+            placeholder_job_title: 'مثلاً طراح وب فرانت‌اند (کابل)',
+            label_description: 'توضیحات',
+            placeholder_description: 'کار، ساعات، دستمزد و مهارت‌های لازم را توضیح دهید (حداکثر 1000 کاراکتر)',
+            label_location: 'موقعیت',
+            placeholder_location: "شهر یا 'دورکاری'",
+            label_price: 'قیمت',
+            placeholder_price: 'مبلغ را وارد کنید',
+            label_online_job: 'این یک کار آنلاین است',
+            label_sample_link: 'نمونه لینک (اگر آنلاین است)',
+            placeholder_sample_link: 'https://example.com/sample',
+            label_contact: 'اطلاعات تماس (تلفن یا ایمیل)',
+            placeholder_contact: 'email@example.com یا +93 700 123 456',
+            label_portfolio: 'لینک نمونه‌کار (اختیاری)',
+            placeholder_portfolio: 'https://instagram.com/username یا https://youtube.com/c/yourprofile',
+            portfolio_help: 'اینستاگرام، تیک‌تاک، یوتیوب یا وب‌سایت نمونه‌کار',
+            label_media_upload: 'آپلود رسانه (اختیاری)',
+            upload_text: 'تصاویر یا ویدیوها را اینجا بکشید و رها کنید',
+            upload_subtext: 'یا',
+            upload_browse: 'برای انتخاب فایل کلیک کنید',
+            upload_limit: 'حداکثر 2MB برای هر فایل (تصاویر یا ویدیوهای کوتاه)',
+            media_remove: 'حذف',
+            submit_job: 'ارسال آگهی',
+            cancel: 'لغو',
+            alert_storage_full: 'فضای ذخیره‌سازی پر است. لطفاً فایل کوچک‌تر انتخاب کنید یا آگهی‌های قدیمی را حذف کنید.',
+            alert_required_fields: 'لطفاً همه بخش‌های ضروری را پر کنید.',
+            alert_invalid_price: 'لطفاً یک قیمت معتبر وارد کنید.',
+            alert_description_short: 'توضیحات باید حداقل ۲۰ کاراکتر باشد.',
+            alert_invalid_contact: 'لطفاً یک ایمیل یا شماره تلفن معتبر وارد کنید.',
+            alert_sample_link_required: 'لطفاً برای کارهای آنلاین نمونه لینک اضافه کنید.',
+            alert_sample_link_format: 'نمونه لینک باید با http:// یا https:// شروع شود',
+            alert_portfolio_link_format: 'لینک نمونه‌کار باید با http:// یا https:// شروع شود',
+            alert_invalid_media_type: 'لطفاً یک فایل تصویر یا ویدیو آپلود کنید.',
+            alert_media_too_large: 'فایل خیلی بزرگ است. لطفاً فایلی زیر ۲MB انتخاب کنید.',
+            feedback_enter_message: 'لطفاً بازخورد خود را وارد کنید.',
+            feedback_invalid_email: 'لطفاً یک ایمیل معتبر وارد کنید.',
+            feedback_thanks: 'از بازخورد شما سپاسگزاریم.',
+            feedback_save_fail: 'ذخیره بازخورد ممکن نشد. لطفاً دوباره تلاش کنید.',
+            newsletter_invalid_email: 'یک ایمیل معتبر وارد کنید.',
+            newsletter_subscribed: 'شما عضو شدید. سپاس از همراهی شما.',
+            seeker_complete_fields: 'لطفاً همه بخش‌ها را کامل کنید.',
+            seeker_min_skills: 'لطفاً حداقل ۲۰ کاراکتر درباره مهارت‌ها بنویسید.',
+            seeker_invalid_contact: 'اطلاعات تماس باید ایمیل یا شماره تلفن معتبر باشد.',
+            seeker_success: 'پروفایل جوینده کار شما با موفقیت ثبت شد.',
+            seeker_save_fail: 'ذخیره پروفایل ممکن نشد. لطفاً دوباره تلاش کنید.',
+            post_success: 'آگهی با موفقیت ثبت شد. در حال انتقال...',
+            post_fail: 'ثبت آگهی ممکن نشد. لطفاً دوباره تلاش کنید.',
+            sign_in_required_title: 'برای ثبت آگهی وارد شوید',
+            sign_in_required_body: 'برای ثبت آگهی نیاز به حساب دارید.',
+            sign_in_required_cta: 'ورود / ساخت حساب',
+            jobs_found_count: '{count} کار پیدا شد'
+        }
+    },
+
+    getLanguage() {
+        return localStorage.getItem(APP_KEYS.LANGUAGE) || 'en';
+    },
+
+    setLanguage(lang) {
+        localStorage.setItem(APP_KEYS.LANGUAGE, lang);
+    },
+
+    t(key) {
+        const lang = this.getLanguage();
+        return this.translations[lang]?.[key] || this.translations.en[key] || '';
+    },
+
+    formatWelcome(name) {
+        return `${this.t('welcome_prefix')}${name || ''}`.trim();
+    },
+
+    formatJobsCount(count) {
+        return this.t('jobs_found_count').replace('{count}', String(count));
+    },
+
+    ensureLanguageSelect() {
+        const navRight = document.querySelector('.nav-right') || document.querySelector('.nav-row');
+        if (!navRight) return;
+
+        if (document.getElementById('language-select')) return;
+
+        const select = document.createElement('select');
+        select.id = 'language-select';
+        select.className = 'language-select';
+        select.setAttribute('aria-label', this.t('language_label'));
+
+        const optionEn = document.createElement('option');
+        optionEn.value = 'en';
+        optionEn.textContent = 'English';
+        const optionFa = document.createElement('option');
+        optionFa.value = 'fa';
+        optionFa.textContent = 'دری';
+
+        select.appendChild(optionEn);
+        select.appendChild(optionFa);
+
+        select.value = this.getLanguage();
+        select.addEventListener('change', (event) => {
+            const lang = String(event.target.value || 'en');
+            this.setLanguage(lang);
+            this.applyTranslations();
+        });
+
+        navRight.appendChild(select);
+    },
+
+    applyTranslations() {
+        const lang = this.getLanguage();
+        document.documentElement.lang = lang === 'fa' ? 'fa' : 'en';
+
+        const tagline = document.querySelector('.site-tagline');
+        if (tagline) tagline.textContent = this.t('tagline');
+
+        const navLinks = document.querySelectorAll('.main-nav a.nav-link');
+        navLinks.forEach((link) => {
+            const href = link.getAttribute('href');
+            const keyMap = {
+                'index.html': 'nav_home',
+                'jobs.html': 'nav_jobs',
+                'about.html': 'nav_about',
+                'contact.html': 'nav_contact',
+                'post-job.html': 'nav_post_job'
+            };
+            const key = keyMap[href || ''];
+            if (key) link.textContent = this.t(key);
+        });
+
+        const authLink = document.getElementById('auth-link');
+        if (authLink) authLink.textContent = this.t('auth_sign_in');
+
+        const profileLink = document.getElementById('profile-link');
+        if (profileLink) profileLink.textContent = this.t('auth_profile');
+
+        const settingsLink = document.getElementById('settings-link');
+        if (settingsLink) settingsLink.textContent = this.t('auth_settings');
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.textContent = this.t('auth_logout');
+
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.textContent = this.t('theme_toggle');
+
+        const heroTitle = document.getElementById('hero-title');
+        if (heroTitle) heroTitle.textContent = this.t('hero_title');
+
+        const heroLead = document.getElementById('hero-lead');
+        if (heroLead) heroLead.textContent = this.t('hero_lead');
+
+        const heroBrowseBtn = document.getElementById('hero-browse-btn');
+        if (heroBrowseBtn) heroBrowseBtn.textContent = this.t('hero_browse');
+
+        const heroPostBtn = document.getElementById('hero-post-btn');
+        if (heroPostBtn) heroPostBtn.textContent = this.t('hero_post');
+
+        const heroSearch = document.getElementById('hero-search');
+        if (heroSearch) heroSearch.setAttribute('placeholder', this.t('hero_search_placeholder'));
+
+        const heroSearchBtn = document.getElementById('hero-search-btn');
+        if (heroSearchBtn) heroSearchBtn.textContent = this.t('hero_search_btn');
+
+        const userDisplay = document.getElementById('user-display');
+        const currentUser = Storage.getCurrentUser();
+        if (userDisplay && currentUser) {
+            userDisplay.textContent = this.formatWelcome(currentUser.fullname || 'User');
+        }
+
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+            const key = el.getAttribute('data-i18n');
+            if (!key) return;
+            const value = this.t(key);
+            if (value) el.textContent = value;
+        });
+
+        document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (!key) return;
+            const value = this.t(key);
+            if (value) el.setAttribute('placeholder', value);
+        });
+
+        document.querySelectorAll('[data-i18n-label]').forEach((el) => {
+            const key = el.getAttribute('data-i18n-label');
+            if (!key) return;
+            const value = this.t(key);
+            if (value) el.setAttribute('label', value);
+        });
+    },
+
+    init() {
+        this.ensureLanguageSelect();
+        this.applyTranslations();
+    }
+};
+
 const AuthManager = {
     init() {
         const user = Storage.getCurrentUser();
@@ -410,7 +968,7 @@ const AuthManager = {
 
         if (!user || !userDisplay || !authLink || !logoutBtn) return;
 
-        userDisplay.textContent = `Welcome, ${user.fullname || 'User'}`;
+        userDisplay.textContent = LanguageManager.formatWelcome(user.fullname || 'User');
         userDisplay.style.display = 'inline';
         authLink.style.display = 'none';
         if (profileLink) profileLink.style.display = 'inline';
@@ -419,7 +977,7 @@ const AuthManager = {
 
         logoutBtn.addEventListener('click', (event) => {
             event.preventDefault();
-            if (!confirm('Are you sure you want to log out?')) return;
+            if (!confirm(LanguageManager.t('logout_confirm'))) return;
 
             localStorage.removeItem(APP_KEYS.USER);
             window.location.reload();
@@ -438,7 +996,7 @@ const FormHandler = {
 
         if (form && !user) {
             const container = form.parentElement;
-            container.innerHTML = '<div style="text-align:center;padding:2rem;"><h3>Please sign in to post a job</h3><p>You need an account before posting a job.</p><a href="auth.html" class="btn" style="display:inline-block;margin-top:1rem;">Sign In / Create Account</a></div>';
+            container.innerHTML = `<div style="text-align:center;padding:2rem;"><h3>${LanguageManager.t('sign_in_required_title')}</h3><p>${LanguageManager.t('sign_in_required_body')}</p><a href="auth.html" class="btn" style="display:inline-block;margin-top:1rem;">${LanguageManager.t('sign_in_required_cta')}</a></div>`;
             return;
         }
 
@@ -535,7 +1093,7 @@ const FormHandler = {
             if (fileInput) fileInput.value = '';
         });
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
             const formData = new FormData(form);
@@ -552,37 +1110,37 @@ const FormHandler = {
             const portfolioLink = String(formData.get('portfolioLink') || '').trim();
 
             if (!title || !category || !description || !location || !contact || !posterType) {
-                alert('Please fill in all required fields.');
+                alert(LanguageManager.t('alert_required_fields'));
                 return;
             }
 
             if (!Number.isFinite(price) || price < 0) {
-                alert('Please enter a valid price.');
+                alert(LanguageManager.t('alert_invalid_price'));
                 return;
             }
 
             if (description.length < 20) {
-                alert('Description must be at least 20 characters.');
+                alert(LanguageManager.t('alert_description_short'));
                 return;
             }
 
             if (!Utils.isEmail(contact) && !Utils.isPhone(contact)) {
-                alert('Please enter a valid email or phone number.');
+                alert(LanguageManager.t('alert_invalid_contact'));
                 return;
             }
 
             if (isOnline && !sampleLink) {
-                alert('Please add a sample link for online jobs.');
+                alert(LanguageManager.t('alert_sample_link_required'));
                 return;
             }
 
             if (sampleLink && !/^https?:\/\//i.test(sampleLink)) {
-                alert('Sample link must start with http:// or https://');
+                alert(LanguageManager.t('alert_sample_link_format'));
                 return;
             }
 
             if (portfolioLink && !/^https?:\/\//i.test(portfolioLink)) {
-                alert('Portfolio link must start with http:// or https://');
+                alert(LanguageManager.t('alert_portfolio_link_format'));
                 return;
             }
 
@@ -606,9 +1164,10 @@ const FormHandler = {
             };
 
             const msgEl = document.getElementById('form-msg');
-            if (!Storage.saveJob(jobData)) {
+            const saveResult = await Storage.saveJobAsync(jobData);
+            if (!saveResult.ok) {
                 if (msgEl) {
-                    msgEl.textContent = 'Unable to post the job right now. Please try again.';
+                    msgEl.textContent = LanguageManager.t('post_fail');
                     msgEl.className = 'form-msg error';
                 }
                 return;
@@ -622,7 +1181,7 @@ const FormHandler = {
             syncOnlineFields();
 
             if (msgEl) {
-                msgEl.textContent = 'Job posted successfully. Redirecting...';
+                msgEl.textContent = LanguageManager.t('post_success');
                 msgEl.className = 'form-msg success';
             }
 
@@ -636,12 +1195,12 @@ const FormHandler = {
         if (!file) return;
 
         if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-            alert('Please upload an image or video file.');
+            alert(LanguageManager.t('alert_invalid_media_type'));
             return;
         }
 
         if (file.size > 2 * 1024 * 1024) {
-            alert('File is too large. Please choose a file under 2MB.');
+            alert(LanguageManager.t('alert_media_too_large'));
             return;
         }
 
@@ -694,7 +1253,7 @@ const FeedbackHandler = {
 
             if (!message) {
                 if (msgEl) {
-                    msgEl.textContent = 'Please enter your feedback.';
+                    msgEl.textContent = LanguageManager.t('feedback_enter_message');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -702,7 +1261,7 @@ const FeedbackHandler = {
 
             if (email && !Utils.isEmail(email)) {
                 if (msgEl) {
-                    msgEl.textContent = 'Please enter a valid email address.';
+                    msgEl.textContent = LanguageManager.t('feedback_invalid_email');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -720,7 +1279,7 @@ const FeedbackHandler = {
 
                 form.reset();
                 if (msgEl) {
-                    msgEl.textContent = 'Thank you for your feedback.';
+                    msgEl.textContent = LanguageManager.t('feedback_thanks');
                     msgEl.className = 'feedback-msg success';
                     setTimeout(() => {
                         msgEl.className = 'feedback-msg';
@@ -728,7 +1287,7 @@ const FeedbackHandler = {
                 }
             } catch {
                 if (msgEl) {
-                    msgEl.textContent = 'Could not save feedback. Please try again.';
+                    msgEl.textContent = LanguageManager.t('feedback_save_fail');
                     msgEl.className = 'feedback-msg error';
                 }
             }
@@ -750,7 +1309,7 @@ const NewsletterHandler = {
 
             if (!Utils.isEmail(email)) {
                 if (msgEl) {
-                    msgEl.textContent = 'Enter a valid email address.';
+                    msgEl.textContent = LanguageManager.t('newsletter_invalid_email');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -764,7 +1323,7 @@ const NewsletterHandler = {
 
             if (input) input.value = '';
             if (msgEl) {
-                msgEl.textContent = 'You are subscribed. Thanks for joining.';
+                msgEl.textContent = LanguageManager.t('newsletter_subscribed');
                 msgEl.className = 'feedback-msg success';
             }
         });
@@ -787,7 +1346,7 @@ const JobSeekerHandler = {
 
             if (!name || !location || !skills || !contact) {
                 if (msgEl) {
-                    msgEl.textContent = 'Please complete all fields.';
+                    msgEl.textContent = LanguageManager.t('seeker_complete_fields');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -795,7 +1354,7 @@ const JobSeekerHandler = {
 
             if (skills.length < 20) {
                 if (msgEl) {
-                    msgEl.textContent = 'Please add at least 20 characters about your skills.';
+                    msgEl.textContent = LanguageManager.t('seeker_min_skills');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -803,7 +1362,7 @@ const JobSeekerHandler = {
 
             if (!Utils.isEmail(contact) && !Utils.isPhone(contact)) {
                 if (msgEl) {
-                    msgEl.textContent = 'Contact must be a valid email or phone number.';
+                    msgEl.textContent = LanguageManager.t('seeker_invalid_contact');
                     msgEl.className = 'feedback-msg error';
                 }
                 return;
@@ -823,12 +1382,12 @@ const JobSeekerHandler = {
                 localStorage.setItem(APP_KEYS.SEEKER_POSTS, JSON.stringify(posts.slice(0, 200)));
                 form.reset();
                 if (msgEl) {
-                    msgEl.textContent = 'Your job-seeker profile was posted successfully.';
+                    msgEl.textContent = LanguageManager.t('seeker_success');
                     msgEl.className = 'feedback-msg success';
                 }
             } catch {
                 if (msgEl) {
-                    msgEl.textContent = 'Could not save your profile. Please try again.';
+                    msgEl.textContent = LanguageManager.t('seeker_save_fail');
                     msgEl.className = 'feedback-msg error';
                 }
             }
@@ -836,15 +1395,88 @@ const JobSeekerHandler = {
     }
 };
 
-const StatsManager = {
+const ReportsManager = {
+    renderReports(reports) {
+        const list = document.getElementById('reports-list');
+        const empty = document.getElementById('reports-empty');
+        if (!list) return;
+
+        if (!Array.isArray(reports) || reports.length === 0) {
+            list.innerHTML = '';
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+
+        if (empty) empty.style.display = 'none';
+        list.innerHTML = reports.map((report) => {
+            const title = Utils.escapeHtml(report.jobTitle || 'Untitled');
+            const reason = Utils.escapeHtml(report.reason || 'Unknown');
+            const details = Utils.escapeHtml(report.details || '');
+            const reporter = Utils.escapeHtml(report.reporterName || report.reporterEmail || 'Anonymous');
+            const createdAt = report.createdAt
+                ? new Date(report.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : '-';
+            const jobLink = report.jobId ? `job-detail.html?id=${report.jobId}` : '';
+
+            return `
+                <div class="report-card">
+                    <div class="report-title">${title}</div>
+                    <div class="report-meta">
+                        <span class="report-badge">${reason}</span>
+                        <span>Reported by: ${reporter}</span>
+                        <span>${createdAt}</span>
+                    </div>
+                    ${details ? `<div class="report-details">${details}</div>` : ''}
+                    <div class="report-actions">
+                        ${jobLink ? `<a class="btn outline small" href="${jobLink}">View Job</a>` : ''}
+                        <button class="btn danger small" data-report-id="${report.id}">Delete Report</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        list.querySelectorAll('button[data-report-id]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.getAttribute('data-report-id'));
+                if (!confirm(LanguageManager.t('report_delete_confirm'))) return;
+                const updated = reports.filter((item) => Number(item.id) !== id);
+                localStorage.setItem(APP_KEYS.REPORTS, JSON.stringify(updated));
+                this.renderReports(updated);
+            });
+        });
+    },
+
     init() {
+        const list = document.getElementById('reports-list');
+        if (!list) return;
+
+        const reports = Utils.readJson(APP_KEYS.REPORTS, []);
+        this.renderReports(reports);
+
+        const clearBtn = document.getElementById('clear-reports-btn');
+        clearBtn?.addEventListener('click', () => {
+            if (!confirm(LanguageManager.t('report_clear_confirm'))) return;
+            localStorage.setItem(APP_KEYS.REPORTS, JSON.stringify([]));
+            this.renderReports([]);
+        });
+    }
+};
+
+const StatsManager = {
+    async init() {
         const jobsEl = document.getElementById('stat-jobs-posted');
         const freelancersEl = document.getElementById('stat-freelancers-active');
         const categoriesEl = document.getElementById('stat-categories');
 
         if (!jobsEl || !freelancersEl || !categoriesEl) return;
 
-        const jobs = Storage.getAllJobs();
+        const jobs = await Storage.getAllJobsAsync();
         const users = Storage.getUsers();
 
         const categories = new Set(
@@ -871,17 +1503,21 @@ const StatsManager = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    LayoutManager.ensureNavRight();
+    await FirebaseStore.init();
+    LanguageManager.init();
     ThemeManager.init();
     AuthManager.init();
-    StatsManager.init();
-    SearchEngine.init();
+    await StatsManager.init();
+    await SearchEngine.init();
     FormHandler.init();
     FeedbackHandler.init();
     NewsletterHandler.init();
     JobSeekerHandler.init();
+    ReportsManager.init();
 
-    const allJobs = Storage.getAllJobs();
+    const allJobs = await Storage.getAllJobsAsync();
     // Avoid overriding the filtered results on pages where search/filter controls exist.
     const hasJobsFilters = Boolean(
         document.getElementById('jobs-search')

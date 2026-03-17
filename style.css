@@ -185,6 +185,17 @@ select:focus-visible {
   line-height: 1.1;
 }
 
+.language-select {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
 @media (min-width: 769px) {
   .site-header {
     height: 72px;
@@ -998,6 +1009,75 @@ label {
   padding: 1.5rem;
   border-radius: 8px;
   margin-top: 1rem;
+}
+
+/* Admin Reports */
+.admin-reports-hero {
+  padding: 2.5rem 0 1.5rem;
+  text-align: center;
+}
+
+.admin-reports-hero h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-reports-section {
+  margin: 1.5rem 0 3rem;
+}
+
+.admin-reports-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.reports-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.report-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.report-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-details {
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.report-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.report-badge {
+  display: inline-block;
+  background: var(--accent-bg);
+  color: var(--primary);
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 /* Profile Page Styles */

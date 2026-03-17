@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>Admin Reports - AfgJobs</title>
+  <meta name="description" content="Review reported jobs on AfgJobs.">
+  <meta property="og:title" content="Admin Reports - AfgJobs">
+  <meta property="og:description" content="Review reported jobs on AfgJobs.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://afgjobs.com/admin-reports.html">
+  <meta property="og:image" content="https://afgjobs.com/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Admin Reports - AfgJobs">
+  <meta name="twitter:description" content="Review reported jobs on AfgJobs.">
+  <meta name="twitter:image" content="https://afgjobs.com/logo.png">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="canonical" href="https://afgjobs.com/admin-reports.html">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav-row">
+      <div class="brand">
+        <a href="index.html" class="brand-link">
+          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <div>
+            <h1 class="site-title">AfgJobs</h1>
+            <p class="site-tagline">Fast local jobs for Afghans</p>
+          </div>
+        </a>
+      </div>
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="jobs.html" class="nav-link">Jobs</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="post-job.html" class="nav-link cta">Post Job</a>
+      </nav>
+      <div class="nav-auth">
+        <span id="user-display" style="color: var(--muted); font-size: 0.9rem; margin-right: 1rem; display: none;"></span>
+        <a href="profile.html" id="profile-link" class="nav-link" style="color: var(--primary); display: none;">My Profile</a>
+        <a href="settings.html" id="settings-link" class="nav-link" style="color: var(--primary); display: none;">Settings</a>
+        <a href="auth.html" id="auth-link" class="nav-link" style="color: var(--primary);">Sign In</a>
+        <button id="logout-btn" class="nav-link" style="background: none; border: none; cursor: pointer; color: #dc2626; display: none;">Logout</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" aria-pressed="false">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="container">
+    <section class="admin-reports-hero">
+      <h2>Reported Jobs</h2>
+      <p class="lead">Review reports submitted by users. Reports are stored in this browser.</p>
+    </section>
+
+    <section class="admin-reports-section">
+      <div class="admin-reports-actions">
+        <button id="clear-reports-btn" class="btn outline">Clear All Reports</button>
+      </div>
+      <div id="reports-empty" class="empty-state-container" style="display: none;">
+        <div class="empty-icon">✅</div>
+        <h4>No reports yet</h4>
+        <p>Reports will appear here when users report a job.</p>
+      </div>
+      <div id="reports-list" class="reports-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">AfgJobs</div>
+      <div class="footer-tagline">Helping Afghans find local work</div>
+      <div class="footer-links"><a href="faq.html">FAQ</a><span aria-hidden="true">|</span><a href="privacy.html">Privacy</a><span aria-hidden="true">|</span><a href="terms.html">Terms</a></div>
+      <div class="footer-copyright">&copy; 2026 AfgJobs - Built for Afghanistan</div>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
