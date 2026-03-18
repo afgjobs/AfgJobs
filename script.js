@@ -94,6 +94,17 @@ const FirebaseStore = {
         try {
             this.db = window.firebase.firestore();
             this.enabled = true;
+            if (window.firebase.auth) {
+                const auth = window.firebase.auth();
+                if (!auth.currentUser) {
+                    try {
+                        await auth.signInAnonymously();
+                    } catch {
+                        // If anonymous auth is disabled, keep Firestore enabled for reads.
+                    }
+                }
+            }
+            await Storage.syncLocalJobsToFirestore();
         } catch {
             this.enabled = false;
         }
@@ -198,7 +209,7 @@ const Storage = {
                     createdAtMs: Date.now(),
                     createdAt: new Date().toISOString()
                 };
-                const docRef = await FirebaseStore.db.collection('jobs').add(payload);
+                const docRef = await FirebaseStore.db.collection('jobs').add(this.prepareJobForFirestore(payload));
                 return { ok: true, id: docRef.id };
             } catch {
                 // If Firestore write fails (rules/offline), fall back to local storage.
@@ -208,6 +219,41 @@ const Storage = {
         }
 
         return this.saveJob(job) ? { ok: true } : { ok: false };
+    },
+
+    async syncLocalJobsToFirestore() {
+        if (!FirebaseStore.enabled || !FirebaseStore.db) return;
+
+        const localJobs = this.getAllJobs();
+        if (!Array.isArray(localJobs) || localJobs.length === 0) return;
+
+        const collection = FirebaseStore.db.collection('jobs');
+        for (const job of localJobs) {
+            if (!job || !job.id) continue;
+            try {
+                const prepared = this.prepareJobForFirestore({
+                    ...job,
+                    createdAtMs: job.createdAtMs || Date.parse(job.createdAt) || Date.now(),
+                    createdAt: job.createdAt || new Date().toISOString()
+                });
+                await collection.doc(String(job.id)).set(prepared, { merge: true });
+            } catch {
+                // Ignore sync failures and continue with the next job.
+            }
+        }
+    },
+
+    prepareJobForFirestore(job) {
+        const payload = { ...job };
+        if (payload.media) {
+            const approxBytes = Math.ceil((payload.media.length * 3) / 4);
+            if (approxBytes > 700 * 1024) {
+                payload.media = '';
+                payload.mediaType = '';
+                payload.mediaLocalOnly = true;
+            }
+        }
+        return payload;
     },
 
     getUsers() {
@@ -1563,8 +1609,8 @@ const StatsManager = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     LayoutManager.ensureNavRight();
-    await FirebaseStore.init();
     await FirebaseAuthLoader.load();
+    await FirebaseStore.init();
     LanguageManager.init();
     ThemeManager.init();
     AuthManager.init();
