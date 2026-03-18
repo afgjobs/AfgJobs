@@ -717,6 +717,23 @@ label {
   margin-bottom: 0.5rem;
 }
 
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.badge-row .badge {
+  margin-bottom: 0;
+}
+
+.owner-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
 .card-footer {
   display: flex;
   justify-content: space-between;

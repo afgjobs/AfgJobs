@@ -443,6 +443,9 @@ const Renderer = {
         const location = Utils.escapeHtml(job.location || 'Remote');
         const posterType = Utils.escapeHtml(job.posterType || 'Poster');
         const description = Utils.escapeHtml((job.description || '').slice(0, 100));
+        const currentUser = Storage.getCurrentUser();
+        const isOwner = Utils.isJobOwner(job, currentUser);
+        const ownerBadge = isOwner ? `<span class="badge owner-badge">${LanguageManager.t('job_owner_badge')}</span>` : '';
         const budgetHtml = Number.isFinite(Number(job.price))
             ? `<p class="budget">${LanguageManager.t('job_budget_label')}: ${Utils.escapeHtml(job.currency || 'USD')} ${Utils.escapeHtml(job.price)}</p>`
             : '';
@@ -463,7 +466,10 @@ const Renderer = {
                 <article class="card job-card" style="cursor: pointer; transition: all 0.3s ease;">
                     ${mediaHtml}
                     <div class="card-body">
-                        <span class="badge">${category}</span>
+                        <div class="badge-row">
+                            <span class="badge">${category}</span>
+                            ${ownerBadge}
+                        </div>
                         <h3>${title}</h3>
                         <p class="location">${LanguageManager.t('job_location_label')}: ${location}</p>
                         <p class="description">${description}${(job.description || '').length > 100 ? '...' : ''}</p>
@@ -698,6 +704,7 @@ const LanguageManager = {
             view_sample_link: 'View sample link',
             job_location_label: 'Location',
             job_budget_label: 'Budget',
+            job_owner_badge: 'Your Job',
             view_details: 'View Details',
             job_not_found_title: 'Job Not Found',
             job_not_found_body: 'This job no longer exists or the link is broken.',
@@ -849,6 +856,7 @@ const LanguageManager = {
             view_sample_link: 'مشاهده نمونه لینک',
             job_location_label: 'موقعیت',
             job_budget_label: 'بودجه',
+            job_owner_badge: 'کار شما',
             view_details: 'مشاهده جزئیات',
             job_not_found_title: 'آگهی پیدا نشد',
             job_not_found_body: 'این آگهی دیگر موجود نیست یا لینک خراب است.',
