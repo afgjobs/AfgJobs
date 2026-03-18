@@ -210,6 +210,44 @@ const Storage = {
         return this.saveJob(job) ? { ok: true } : { ok: false };
     },
 
+    updateJob(job) {
+        if (!job || !job.id) return false;
+        const jobs = this.getAllJobs();
+        const index = jobs.findIndex((item) => String(item.id) === String(job.id));
+        if (index < 0) return false;
+        jobs[index] = {
+            ...jobs[index],
+            ...job,
+            updatedAt: new Date().toISOString()
+        };
+        try {
+            localStorage.setItem(APP_KEYS.JOBS, JSON.stringify(jobs));
+            return true;
+        } catch {
+            return false;
+        }
+    },
+
+    async updateJobAsync(job) {
+        if (!job || !job.id) return { ok: false };
+        if (FirebaseStore.enabled && FirebaseStore.db) {
+            try {
+                const payload = {
+                    ...job,
+                    updatedAt: new Date().toISOString(),
+                    updatedAtMs: Date.now()
+                };
+                await FirebaseStore.db.collection('jobs').doc(String(job.id)).set(payload, { merge: true });
+                return { ok: true };
+            } catch {
+                // Fall back to local storage below.
+            }
+        }
+
+        const localOk = this.updateJob(job);
+        return localOk ? { ok: true, local: true } : { ok: false };
+    },
+
     getUsers() {
         try {
             const data = localStorage.getItem(APP_KEYS.USERS);
@@ -1046,8 +1084,10 @@ const AuthManager = {
 const FormHandler = {
     mediaData: null,
     mediaType: null,
+    mediaTouched: false,
+    editingJob: null,
 
-    init() {
+    async init() {
         const form = document.getElementById('post-job-form');
         const user = Storage.getCurrentUser();
         const settings = Storage.getSettings();
@@ -1146,10 +1186,13 @@ const FormHandler = {
         removeBtn?.addEventListener('click', () => {
             this.mediaData = null;
             this.mediaType = null;
+            this.mediaTouched = true;
             const container = document.getElementById('media-preview-container');
             if (container) container.style.display = 'none';
             if (fileInput) fileInput.value = '';
         });
+
+        await this.loadEditJob(form, user, syncOnlineFields);
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -1166,6 +1209,8 @@ const FormHandler = {
             const isOnline = formData.get('isOnline') === 'on';
             const sampleLink = String(formData.get('sampleLink') || '').trim();
             const portfolioLink = String(formData.get('portfolioLink') || '').trim();
+            const existingJob = this.editingJob;
+            const isEditing = Boolean(existingJob && existingJob.id);
 
             if (!title || !category || !description || !location || !contact || !posterType) {
                 alert(LanguageManager.t('alert_required_fields'));
@@ -1202,6 +1247,13 @@ const FormHandler = {
                 return;
             }
 
+            let media = this.mediaData;
+            let mediaType = this.mediaType;
+            if (isEditing && !this.mediaTouched) {
+                media = existingJob.media || '';
+                mediaType = existingJob.mediaType || '';
+            }
+
             const jobData = {
                 title,
                 category,
@@ -1214,15 +1266,26 @@ const FormHandler = {
                 isOnline,
                 sampleLink,
                 portfolioLink,
-                media: this.mediaData,
-                mediaType: this.mediaType,
-                posterId: user.id,
-                postedBy: user.email,
-                postedByName: user.fullname
+                media,
+                mediaType,
+                posterId: existingJob?.posterId || user.id,
+                postedBy: existingJob?.postedBy || user.email,
+                postedByName: existingJob?.postedByName || user.fullname
             };
 
             const msgEl = document.getElementById('form-msg');
-            const saveResult = await Storage.saveJobAsync(jobData);
+            let saveResult = null;
+            if (isEditing) {
+                const payload = {
+                    ...jobData,
+                    id: existingJob.id,
+                    createdAt: existingJob.createdAt || new Date().toISOString(),
+                    createdAtMs: existingJob.createdAtMs || Date.parse(existingJob.createdAt) || Date.now()
+                };
+                saveResult = await Storage.updateJobAsync(payload);
+            } else {
+                saveResult = await Storage.saveJobAsync(jobData);
+            }
             if (!saveResult.ok) {
                 if (msgEl) {
                     msgEl.textContent = LanguageManager.t('post_fail');
@@ -1234,19 +1297,104 @@ const FormHandler = {
             form.reset();
             this.mediaData = null;
             this.mediaType = null;
+            this.mediaTouched = false;
+            this.editingJob = null;
             const previewContainer = document.getElementById('media-preview-container');
             if (previewContainer) previewContainer.style.display = 'none';
             syncOnlineFields();
 
             if (msgEl) {
-                msgEl.textContent = LanguageManager.t('post_success');
+                msgEl.textContent = isEditing ? 'Job updated successfully.' : LanguageManager.t('post_success');
                 msgEl.className = 'form-msg success';
             }
 
             setTimeout(() => {
+                localStorage.removeItem('editJobId');
                 window.location.href = 'jobs.html';
             }, 1200);
         });
+    },
+
+    async loadEditJob(form, user, syncOnlineFields) {
+        const editId = localStorage.getItem('editJobId');
+        if (!editId) return;
+
+        const jobs = await Storage.getAllJobsAsync();
+        const job = jobs.find((item) => String(item.id) === String(editId));
+        if (!job) {
+            localStorage.removeItem('editJobId');
+            return;
+        }
+
+        if (!Utils.isJobOwner(job, user)) {
+            localStorage.removeItem('editJobId');
+            alert(LanguageManager.t('delete_not_owner'));
+            window.location.href = 'jobs.html';
+            return;
+        }
+
+        this.editingJob = job;
+        const jobIdInput = document.getElementById('job-id');
+        if (jobIdInput) jobIdInput.value = job.id;
+
+        document.getElementById('poster-type').value = job.posterType || 'Company';
+        document.getElementById('category').value = job.category || '';
+        document.getElementById('title').value = job.title || '';
+        document.getElementById('description').value = job.description || '';
+        document.getElementById('location').value = job.location || '';
+        document.getElementById('price').value = job.price ?? '';
+        document.getElementById('currency').value = job.currency || 'USD';
+        document.getElementById('contact').value = job.contact || '';
+        document.getElementById('portfolio-link').value = job.portfolioLink || '';
+        document.getElementById('is-online').checked = Boolean(job.isOnline);
+        document.getElementById('sample-link').value = job.sampleLink || '';
+        if (typeof syncOnlineFields === 'function') syncOnlineFields();
+
+        const descCount = document.getElementById('char-count');
+        if (descCount) descCount.textContent = `${(job.description || '').length}/1000`;
+
+        if (job.media) {
+            this.mediaData = job.media;
+            this.mediaType = job.mediaType || '';
+            this.mediaTouched = false;
+            this.setMediaPreview(job.media, job.mediaType || '');
+        }
+
+        const titleEl = document.querySelector('.post-form h2');
+        const leadEl = document.querySelector('.post-form .lead');
+        if (titleEl) titleEl.textContent = 'Edit Job';
+        if (leadEl) leadEl.textContent = 'Update the details below and save your changes.';
+
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.textContent = 'Update Job';
+        const cancelBtn = document.getElementById('cancel-edit');
+        if (cancelBtn) {
+            cancelBtn.style.display = 'inline-flex';
+            cancelBtn.addEventListener('click', () => {
+                localStorage.removeItem('editJobId');
+                window.location.href = 'jobs.html';
+            }, { once: true });
+        }
+    },
+
+    setMediaPreview(media, mediaType) {
+        const previewContainer = document.getElementById('media-preview-container');
+        const imgEl = document.getElementById('media-preview-img');
+        const videoEl = document.getElementById('media-preview-video');
+
+        if (!previewContainer || !imgEl || !videoEl) return;
+
+        previewContainer.style.display = 'block';
+        const isVideo = String(mediaType || '').startsWith('video/');
+        if (isVideo) {
+            imgEl.style.display = 'none';
+            videoEl.style.display = 'block';
+            videoEl.src = media;
+        } else {
+            videoEl.style.display = 'none';
+            imgEl.style.display = 'block';
+            imgEl.src = media;
+        }
     },
 
     handleFile(file) {
@@ -1264,32 +1412,14 @@ const FormHandler = {
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            this.mediaData = event.target?.result;
+            const result = event.target?.result;
+            if (!result) return;
+            this.mediaData = String(result);
             this.mediaType = file.type;
-
-            const previewContainer = document.getElementById('media-preview-container');
+            this.mediaTouched = true;
+            this.setMediaPreview(this.mediaData, this.mediaType);
             const info = document.getElementById('media-info');
-            if (!previewContainer) return;
-
-            previewContainer.style.display = 'block';
             if (info) info.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
-
-            const imgEl = document.getElementById('media-preview-img');
-            const videoEl = document.getElementById('media-preview-video');
-
-            if (file.type.startsWith('video/')) {
-                if (imgEl) imgEl.style.display = 'none';
-                if (videoEl) {
-                    videoEl.src = String(event.target?.result || '');
-                    videoEl.style.display = 'block';
-                }
-            } else {
-                if (videoEl) videoEl.style.display = 'none';
-                if (imgEl) {
-                    imgEl.src = String(event.target?.result || '');
-                    imgEl.style.display = 'block';
-                }
-            }
         };
 
         reader.readAsDataURL(file);

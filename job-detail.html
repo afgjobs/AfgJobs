@@ -472,6 +472,7 @@
         <!-- Owner Actions -->
         <div id="owner-actions" class="job-section" style="display: none; text-align: center;">
           <h4 style="margin-bottom: 1rem;" data-i18n="owner_manage">Manage Your Job</h4>
+          <button id="edit-job-btn" class="btn outline" type="button">Edit This Job</button>
           <button id="delete-job-btn" class="btn danger" type="button" data-i18n="delete_job">Delete This Job</button>
         </div>
 
@@ -636,6 +637,7 @@
         const currentUser = Storage.getCurrentUser();
         const ownerSection = document.getElementById('owner-actions');
         const deleteBtn = document.getElementById('delete-job-btn');
+        const editBtn = document.getElementById('edit-job-btn');
         const isOwner = Utils.isJobOwner(job, currentUser);
         if (ownerSection) {
           ownerSection.style.display = isOwner ? 'block' : 'none';
@@ -653,6 +655,16 @@
               return;
             }
             window.location.href = 'jobs.html';
+          };
+        }
+        if (editBtn) {
+          editBtn.onclick = () => {
+            if (!isOwner) {
+              alert(LanguageManager.t('delete_not_owner'));
+              return;
+            }
+            localStorage.setItem('editJobId', job.id);
+            window.location.href = 'post-job.html';
           };
         }
 
