@@ -663,7 +663,11 @@
             if (!confirm(LanguageManager.t('delete_confirm'))) return;
             const result = await Storage.deleteJobByIdAsync(job.id, currentUser);
             if (!result.ok) {
-              alert(LanguageManager.t('delete_failed'));
+              if (result.reason === 'auth-required') {
+                alert('Please sign in with your account to delete this job.');
+              } else {
+                alert(LanguageManager.t('delete_failed'));
+              }
               return;
             }
             window.location.href = 'jobs.html';

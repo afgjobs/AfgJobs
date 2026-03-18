@@ -339,6 +339,8 @@ const Storage = {
     async deleteJobByIdAsync(jobId, user) {
         if (FirebaseStore.enabled && FirebaseStore.db) {
             try {
+                await FirebaseAuthLoader.load();
+                await FirebaseAuthState.wait();
                 const docRef = FirebaseStore.db.collection('jobs').doc(String(jobId));
                 const snapshot = await docRef.get();
                 if (!snapshot.exists) return { ok: false, reason: 'not-found' };
@@ -346,6 +348,7 @@ const Storage = {
                 const fbUser = window.firebase?.auth ? window.firebase.auth().currentUser : null;
                 const authUser = fbUser ? { id: fbUser.uid, email: fbUser.email || '' } : user;
                 const isAdmin = Utils.isAdmin(user) || Utils.isAdmin(authUser);
+                if (!fbUser && !isAdmin) return { ok: false, reason: 'auth-required' };
                 if (!isAdmin && !Utils.isJobOwner(data, authUser)) return { ok: false, reason: 'not-owner' };
                 await docRef.delete();
                 return { ok: true };
