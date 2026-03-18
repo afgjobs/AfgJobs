@@ -514,14 +514,15 @@
         if (FirebaseStore.enabled && FirebaseStore.db) {
           try {
             const doc = await FirebaseStore.db.collection('jobs').doc(String(id)).get();
-            if (!doc.exists) return null;
-            return { id: doc.id, ...doc.data() };
+            if (doc.exists) {
+              return { id: doc.id, ...doc.data() };
+            }
           } catch {
-            return null;
+            // Fall back to local storage below.
           }
         }
 
-        const allJobs = Storage.getAllJobs();
+        const allJobs = await Storage.getAllJobsAsync();
         return allJobs.find(job => String(job.id) === String(id));
       },
 
