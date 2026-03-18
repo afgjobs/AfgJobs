@@ -963,12 +963,18 @@ const AuthManager = {
             logoutBtn.style.display = 'inline';
         };
 
-        const localUser = Storage.getCurrentUser();
-        if (localUser) {
-            applySignedIn(localUser);
-        } else {
-            applySignedOut();
-        }
+        const syncWelcomeFromStorage = () => {
+            const latestUser = Storage.getCurrentUser();
+            if (latestUser) {
+                applySignedIn(latestUser);
+            } else {
+                applySignedOut();
+            }
+        };
+
+        syncWelcomeFromStorage();
+
+        window.addEventListener('afg-user-updated', syncWelcomeFromStorage);
 
         logoutBtn.addEventListener('click', async (event) => {
             event.preventDefault();

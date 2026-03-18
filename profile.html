@@ -517,6 +517,7 @@
         syncUserToUsersCollection(updated);
         loadProfileData(updated);
         updateWelcome(updated.fullname || 'User');
+        window.dispatchEvent(new Event('afg-user-updated'));
         showMessage('profile-msg', 'Profile updated successfully.', 'success');
       });
 
@@ -592,6 +593,7 @@
         syncUserToUsersCollection(updated);
         loadProfileData(updated);
         updateWelcome(updated.fullname || 'User');
+        window.dispatchEvent(new Event('afg-user-updated'));
         document.getElementById('profile-modal').style.display = 'none';
         showMessage('modal-msg', 'Profile updated successfully.', 'success');
       });
