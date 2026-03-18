@@ -334,6 +334,7 @@
       document.getElementById('profile-type').textContent = user.type || 'User';
       document.getElementById('profile-email').textContent = user.email || '';
       document.getElementById('profile-contact').textContent = user.phone || '';
+      updateWelcome(displayName);
       renderAvatar(user.avatar, displayName);
 
       document.getElementById('edit-name').value = displayName;
@@ -347,6 +348,16 @@
       document.getElementById('modal-bio').value = user.bio || '';
 
       updateStats(user.id);
+    }
+
+    function updateWelcome(name) {
+      const userDisplay = document.getElementById('user-display');
+      if (!userDisplay) return;
+      const label = window.LanguageManager && typeof LanguageManager.formatWelcome === 'function'
+        ? LanguageManager.formatWelcome(name || 'User')
+        : `Welcome, ${name || 'User'}`;
+      userDisplay.textContent = label;
+      userDisplay.style.display = 'inline';
     }
 
     function renderAvatar(photoData, fullName) {
@@ -505,6 +516,7 @@
         writeJson(KEYS.USER, updated);
         syncUserToUsersCollection(updated);
         loadProfileData(updated);
+        updateWelcome(updated.fullname || 'User');
         showMessage('profile-msg', 'Profile updated successfully.', 'success');
       });
 
@@ -579,6 +591,7 @@
         writeJson(KEYS.USER, updated);
         syncUserToUsersCollection(updated);
         loadProfileData(updated);
+        updateWelcome(updated.fullname || 'User');
         document.getElementById('profile-modal').style.display = 'none';
         showMessage('modal-msg', 'Profile updated successfully.', 'success');
       });
