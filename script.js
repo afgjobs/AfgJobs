@@ -1737,14 +1737,41 @@ const JobSeekerHandler = {
 const AdminAccess = {
     ensure(listEl, emptyEl, clearBtn) {
         const user = Storage.getCurrentUser();
-        if (Utils.isAdmin(user)) return true;
+        const localIsAdmin = Utils.isAdmin(user);
+        const firebaseUser = window.firebase?.auth ? window.firebase.auth().currentUser : null;
+        const firebaseEmail = firebaseUser?.email ? String(firebaseUser.email).trim().toLowerCase() : '';
+        const firebaseIsAdmin = ADMIN_EMAILS.includes(firebaseEmail);
+
+        if (firebaseIsAdmin) return true;
+
+        let message = 'Access denied. This page is restricted.';
+        if (localIsAdmin) {
+            message = 'Please sign in with your admin account to load reports.';
+        }
 
         if (listEl) {
-            listEl.innerHTML = '<div class="empty-state-container"><h4>Access denied</h4><p>This page is restricted.</p></div>';
+            listEl.innerHTML = `<div class="empty-state-container"><h4>Access denied</h4><p>${message} <a href="auth.html">Sign in</a></p></div>`;
         }
         if (emptyEl) emptyEl.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'none';
         return false;
+    }
+};
+
+const FirebaseAuthState = {
+    ready: null,
+
+    wait() {
+        if (!window.firebase || !window.firebase.auth) return Promise.resolve(false);
+        if (this.ready) return this.ready;
+        this.ready = new Promise((resolve) => {
+            const auth = window.firebase.auth();
+            const unsub = auth.onAuthStateChanged(() => {
+                unsub();
+                resolve(true);
+            });
+        });
+        return this.ready;
     }
 };
 
@@ -1874,6 +1901,7 @@ const ReportsManager = {
 
         const clearBtn = document.getElementById('clear-reports-btn');
         const empty = document.getElementById('reports-empty');
+        await FirebaseAuthState.wait();
         if (!AdminAccess.ensure(list, empty, clearBtn)) return;
 
         const reports = await this.fetchReports();
@@ -2011,6 +2039,7 @@ const FeedbackAdminManager = {
 
         const clearBtn = document.getElementById('clear-feedback-btn');
         const empty = document.getElementById('feedback-empty');
+        await FirebaseAuthState.wait();
         if (!AdminAccess.ensure(list, empty, clearBtn)) return;
 
         const items = await this.fetchFeedback();
