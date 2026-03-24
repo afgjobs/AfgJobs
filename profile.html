@@ -226,6 +226,7 @@
     </div>
   </footer>
 
+  <script src="cloudinary-config.js"></script>
   <script src="script.js" defer></script>
   <script>
     const KEYS = {
@@ -466,7 +467,7 @@
     }
 
     function setupFormHandlers() {
-      document.getElementById('profile-photo').addEventListener('change', function (e) {
+      document.getElementById('profile-photo').addEventListener('change', async function (e) {
         clearError('error-profilePhoto');
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -480,6 +481,34 @@
         if (file.size > 1.5 * 1024 * 1024) {
           setError('error-profilePhoto', 'Image must be 1.5MB or smaller.');
           this.value = '';
+          return;
+        }
+
+        const msgEl = document.getElementById('profile-msg');
+        if (window.CloudinaryUploader && CloudinaryUploader.isConfigured()) {
+          if (msgEl) {
+            msgEl.textContent = 'Uploading photo...';
+            msgEl.className = 'form-msg';
+          }
+          try {
+            const result = await CloudinaryUploader.uploadFile(file, {
+              folder: 'avatars',
+              tags: ['profile-avatar'],
+              resourceType: 'image'
+            });
+            activeUser.avatar = String(result.url || '');
+            renderAvatar(activeUser.avatar, activeUser.fullname || 'User');
+            if (msgEl) {
+              msgEl.textContent = 'Photo uploaded.';
+              msgEl.className = 'form-msg success';
+            }
+          } catch (err) {
+            setError('error-profilePhoto', err?.message || 'Photo upload failed.');
+            if (msgEl) {
+              msgEl.textContent = '';
+              msgEl.className = 'form-msg';
+            }
+          }
           return;
         }
 

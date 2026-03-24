@@ -42,6 +42,83 @@ const DEFAULT_SETTINGS = {
 
 const DEFAULT_JOBS = [];
 
+const CloudinaryUploader = {
+    getConfig() {
+        return window.CLOUDINARY_CONFIG || {};
+    },
+
+    isPlaceholder(value) {
+        const normalized = String(value || '').trim().toUpperCase();
+        return !normalized || normalized.includes('YOUR_') || normalized.includes('PLACEHOLDER');
+    },
+
+    isConfigured() {
+        const config = this.getConfig();
+        return Boolean(
+            config.cloudName
+            && config.uploadPreset
+            && !this.isPlaceholder(config.cloudName)
+            && !this.isPlaceholder(config.uploadPreset)
+        );
+    },
+
+    getSetupError() {
+        const config = this.getConfig();
+        if (this.isConfigured()) return '';
+        if (this.isPlaceholder(config.cloudName) || this.isPlaceholder(config.uploadPreset)) {
+            return 'Cloudinary is not configured yet. Update cloudinary-config.js with your cloud name and unsigned upload preset.';
+        }
+        return 'Cloudinary is not configured.';
+    },
+
+    buildFolder(config, extraFolder) {
+        const baseFolder = String(config.folder || '').trim().replace(/^\/+|\/+$/g, '');
+        const childFolder = String(extraFolder || '').trim().replace(/^\/+|\/+$/g, '');
+        return [baseFolder, childFolder].filter(Boolean).join('/');
+    },
+
+    async uploadFile(file, options = {}) {
+        const config = this.getConfig();
+        if (!this.isConfigured()) {
+            throw new Error(this.getSetupError());
+        }
+
+        const resourceType = options.resourceType
+            || (file?.type?.startsWith('video/') ? 'video' : 'image');
+        const endpoint = `https://api.cloudinary.com/v1_1/${config.cloudName}/${resourceType}/upload`;
+        const form = new FormData();
+        form.append('file', file);
+        form.append('upload_preset', config.uploadPreset);
+
+        const folder = this.buildFolder(config, options.folder);
+        if (folder) form.append('folder', folder);
+        if (Array.isArray(options.tags) && options.tags.length > 0) {
+            form.append('tags', options.tags.join(','));
+        }
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: form
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const errorMessage = payload?.error?.message || 'Cloudinary upload failed.';
+            throw new Error(errorMessage);
+        }
+
+        return {
+            url: payload.secure_url || payload.url || '',
+            resourceType: payload.resource_type || resourceType,
+            publicId: payload.public_id || '',
+            format: payload.format || '',
+            bytes: payload.bytes || 0
+        };
+    }
+};
+
+window.CloudinaryUploader = CloudinaryUploader;
+
 const Utils = {
     escapeHtml(value) {
         return String(value ?? '')
@@ -1723,22 +1800,40 @@ const FormHandler = {
                 media = existingJob.media || '';
                 mediaType = existingJob.mediaType || '';
             } else if (this.mediaFile) {
-                const storageReady = await FirebaseStorageLoader.load();
-                if (storageReady && window.firebase?.storage) {
+                if (CloudinaryUploader.isConfigured()) {
                     try {
-                        const storage = window.firebase.storage();
-                        const safeName = String(this.mediaFile.name || 'upload')
-                            .replace(/[^a-zA-Z0-9._-]+/g, '_')
-                            .slice(0, 80);
-                        const userId = user?.id ? String(user.id) : 'anonymous';
-                        const path = `jobs/${userId}/${Date.now()}-${safeName}`;
-                        const ref = storage.ref().child(path);
-                        await ref.put(this.mediaFile, { contentType: this.mediaFile.type });
-                        media = await ref.getDownloadURL();
-                        mediaType = this.mediaFile.type;
+                        const resourceType = this.mediaFile.type.startsWith('video/') ? 'video' : 'image';
+                        const result = await CloudinaryUploader.uploadFile(this.mediaFile, {
+                            folder: 'jobs',
+                            tags: ['job-media'],
+                            resourceType
+                        });
+                        if (result.url) {
+                            media = result.url;
+                            mediaType = this.mediaFile.type;
+                        }
                     } catch {
                         alert('Media upload failed. Please try again or choose a smaller file.');
                         return;
+                    }
+                } else {
+                    const storageReady = await FirebaseStorageLoader.load();
+                    if (storageReady && window.firebase?.storage) {
+                        try {
+                            const storage = window.firebase.storage();
+                            const safeName = String(this.mediaFile.name || 'upload')
+                                .replace(/[^a-zA-Z0-9._-]+/g, '_')
+                                .slice(0, 80);
+                            const userId = user?.id ? String(user.id) : 'anonymous';
+                            const path = `jobs/${userId}/${Date.now()}-${safeName}`;
+                            const ref = storage.ref().child(path);
+                            await ref.put(this.mediaFile, { contentType: this.mediaFile.type });
+                            media = await ref.getDownloadURL();
+                            mediaType = this.mediaFile.type;
+                        } catch {
+                            alert('Media upload failed. Please try again or choose a smaller file.');
+                            return;
+                        }
                     }
                 }
             }
@@ -2184,6 +2279,7 @@ const ReportsManager = {
             const reportId = Utils.escapeHtml(String(report.id || ''));
             const reportSource = Utils.escapeHtml(String(report.__source || 'local'));
 
+            const jobId = Utils.escapeHtml(String(report.jobId || ''));
             return `
                 <div class="report-card">
                     <div class="report-title">${title}</div>
@@ -2195,11 +2291,22 @@ const ReportsManager = {
                     ${details ? `<div class="report-details">${details}</div>` : ''}
                     <div class="report-actions">
                         ${jobLink ? `<a class="btn outline small" href="${jobLink}">View Job</a>` : ''}
+                        ${jobId ? `<button class="btn warning small" data-job-id="${jobId}" data-job-delete="true">Delete Job</button>` : ''}
                         <button class="btn danger small" data-report-id="${reportId}" data-report-source="${reportSource}">Delete Report</button>
                     </div>
                 </div>
             `;
         }).join('');
+
+        list.querySelectorAll('button[data-job-delete]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const jobId = btn.getAttribute('data-job-id');
+                if (!confirm('Are you sure you want to permanently delete this job? This cannot be undone.')) return;
+                await this.deleteJobAsAdmin(jobId);
+                const refreshed = await this.fetchReports();
+                this.renderReports(refreshed);
+            });
+        });
 
         list.querySelectorAll('button[data-report-id]').forEach((btn) => {
             btn.addEventListener('click', async () => {
@@ -2226,6 +2333,19 @@ const ReportsManager = {
         const reports = Utils.readJson(APP_KEYS.REPORTS, []);
         const updated = reports.filter((item) => String(item.id) !== String(id));
         localStorage.setItem(APP_KEYS.REPORTS, JSON.stringify(updated));
+    },
+
+    async deleteJobAsAdmin(jobId) {
+        // Get the current user (admin)
+        const firebaseUser = window.firebase?.auth ? window.firebase.auth().currentUser : null;
+        const adminUser = firebaseUser ? { id: firebaseUser.uid, email: firebaseUser.email || '' } : { email: '' };
+
+        // Use the Storage utility to delete the job async
+        const result = await Storage.deleteJobByIdAsync(jobId, adminUser);
+        if (!result.ok) {
+            console.error('Failed to delete job:', result.reason);
+            alert(`Failed to delete job: ${result.reason}`);
+        }
     },
 
     async clearReports() {
