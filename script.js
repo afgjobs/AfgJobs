@@ -406,7 +406,7 @@ const Storage = {
         const jobs = this.getAllJobs();
         const target = jobs.find((job) => String(job.id) === String(jobId));
         if (!target) return { ok: false, reason: 'not-found' };
-        if (!Utils.isJobOwner(target, user)) return { ok: false, reason: 'not-owner' };
+        if (!Utils.isAdmin(user) && !Utils.isJobOwner(target, user)) return { ok: false, reason: 'not-owner' };
 
         const updated = jobs.filter((job) => String(job.id) !== String(jobId));
         localStorage.setItem(APP_KEYS.JOBS, JSON.stringify(updated));
