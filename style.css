@@ -1459,17 +1459,43 @@ label {
     flex-wrap: wrap;
     justify-content: center;
   }
+  .brand {
+    width: 100%;
+  }
+  .brand-link {
+    justify-content: center;
+    text-align: center;
+  }
   .nav-right {
     width: 100%;
     justify-content: center;
+    align-items: stretch;
     flex-wrap: wrap;
+    gap: 0.75rem;
   }
   .nav-auth {
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
+    gap: 0.75rem;
+    text-align: center;
+  }
+  .nav-auth #user-display {
+    width: 100%;
+    max-width: none;
+    margin-right: 0 !important;
+    text-align: center;
+  }
+  .nav-auth .nav-link,
+  .nav-auth button.nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .theme-toggle {
+    width: 100%;
+  }
+  .language-select {
     width: 100%;
   }
   .featured-grid, .grid-3 {
