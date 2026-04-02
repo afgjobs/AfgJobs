@@ -16,10 +16,10 @@
   <meta name="twitter:title" content="My Profile - AfgJobs">
   <meta name="twitter:description" content="View and manage your AfgJobs profile, job postings, and account settings.">
   <meta name="twitter:image" content="https://afgjobs.com/logo.png">
-  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="icon" href="site-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="apple-touch-icon" href="/site-icon.svg">
   <link rel="canonical" href="https://afgjobs.com/profile.html">
 </head>
 <body>
@@ -28,7 +28,7 @@
     <div class="container nav-row">
       <div class="brand">
         <a href="index.html" class="brand-link">
-          <img src="logo.png" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="50" height="30">
+          <img src="site-icon.svg" alt="AfgJobs Logo" class="site-logo" onerror="this.style.display='none'" loading="lazy" decoding="async" width="40" height="40">
           <div>
             <h1 class="site-title">AfgJobs</h1>
             <p class="site-tagline">Fast local jobs for Afghans</p>
@@ -226,7 +226,7 @@
     </div>
   </footer>
 
-  <script src="cloudinary-config.js"></script>
+  <script src="r2-config.js"></script>
   <script src="script.js" defer></script>
   <script>
     const KEYS = {
@@ -492,13 +492,13 @@
         }
 
         const msgEl = document.getElementById('profile-msg');
-        if (window.CloudinaryUploader && CloudinaryUploader.isConfigured()) {
+        if (window.R2Uploader && R2Uploader.isConfigured()) {
           if (msgEl) {
             msgEl.textContent = 'Uploading photo...';
             msgEl.className = 'form-msg';
           }
           try {
-            const result = await CloudinaryUploader.uploadFile(file, {
+            const result = await R2Uploader.uploadFile(file, {
               folder: 'avatars',
               tags: ['profile-avatar'],
               resourceType: 'image'

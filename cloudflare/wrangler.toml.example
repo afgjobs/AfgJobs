@@ -1,0 +1,10 @@
+name = "afgjobs-r2-upload"
+main = "r2-upload-worker.js"
+compatibility_date = "2026-04-02"
+
+[vars]
+PUBLIC_BUCKET_URL = "https://pub-YOUR_BUCKET_ID.r2.dev"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "YOUR_BUCKET_NAME"
