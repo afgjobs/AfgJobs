@@ -33,19 +33,72 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
-# Cache control for static assets
+# Cache control for static assets using mod_expires
 <IfModule mod_expires.c>
     ExpiresActive On
-    ExpiresByType image/gif "access plus 1 month"
-    ExpiresByType image/jpeg "access plus 1 month"
-    ExpiresByType image/png "access plus 1 month"
-    ExpiresByType image/webp "access plus 1 month"
-    ExpiresByType text/css "access plus 1 week"
-    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresDefault "access plus 7 days"
+    
+    # Images - cache for 1 month
+    ExpiresByType image/gif "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 30 days"
+    
+    # CSS/JS - cache for 2 weeks
+    ExpiresByType text/css "access plus 14 days"
+    ExpiresByType application/javascript "access plus 14 days"
+    ExpiresByType text/javascript "access plus 14 days"
+    
+    # Fonts - cache for 1 month
+    ExpiresByType font/ttf "access plus 30 days"
+    ExpiresByType font/woff "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 30 days"
+    
+    # HTML - shorter cache, use hash busting for updates
     ExpiresByType text/html "access plus 1 day"
 </IfModule>
 
-# GZIP compression
+# GZIP compression - CRITICAL FOR SPEED
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css text/javascript application/javascript application/json image/svg+xml
+    AddEncoding gzip .gz
+    <IfModule mod_filter.c>
+        FilterDeclare COMPRESS
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $text/html
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $text/plain
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $text/xml
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $text/css
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $text/javascript
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $application/javascript
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $application/json
+        FilterProvider COMPRESS DEFLATE resp=Content-Type $image/svg+xml
+        FilterChain COMPRESS
+        FilterProtocol COMPRESS DEFLATE change=yes;byteranges=no
+    </IfModule>
+</IfModule>
+
+# Browser caching headers
+<IfModule mod_headers.c>
+    # Cache HTML pages for 1 day (users can refresh for new)
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "public, max-age=86400, must-revalidate"
+    </FilesMatch>
+    
+    # Cache CSS/JS for 2 weeks with ETag validation
+    <FilesMatch "\.(css|js|min\.css|min\.js)$">
+        Header set Cache-Control "public, max-age=1209600, immutable"
+        Header set Vary "Accept-Encoding"
+    </FilesMatch>
+    
+    # Cache images for 1 month
+    <FilesMatch "\.(jpg|jpeg|png|gif|ico|webp|svg|font|woff|woff2|ttf)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# ETags for efficient caching
+<IfModule mod_headers.c>
+    Header set ETag W/"%{TIME_YEAR}%m%d%H%M%S"
 </IfModule>
