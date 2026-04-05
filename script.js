@@ -2738,6 +2738,90 @@ const StatsManager = {
     }
 };
 
+const HomePageManager = {
+    async init() {
+        const snapshotJobs = document.getElementById('snapshot-jobs');
+        const snapshotCategories = document.getElementById('snapshot-categories');
+        const snapshotCities = document.getElementById('snapshot-cities');
+        const categoryTags = document.getElementById('hero-category-tags');
+        const citySummary = document.getElementById('hero-city-summary');
+        const popularCategories = document.getElementById('popular-category-chips');
+
+        if (!snapshotJobs && !snapshotCategories && !snapshotCities && !categoryTags && !citySummary && !popularCategories) {
+            return;
+        }
+
+        const jobs = await Storage.getAllJobsAsync();
+        const categoryCounts = new Map();
+        const cityCounts = new Map();
+
+        jobs.forEach((job) => {
+            const category = String(job?.category || '').trim();
+            if (category) {
+                categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+            }
+
+            const city = String(job?.location || '').trim();
+            if (city) {
+                cityCounts.set(city, (cityCounts.get(city) || 0) + 1);
+            }
+        });
+
+        const topCategories = Array.from(categoryCounts.entries())
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+            .slice(0, 6);
+
+        const topCities = Array.from(cityCounts.entries())
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+            .slice(0, 3);
+
+        if (snapshotJobs) snapshotJobs.textContent = String(jobs.length);
+        if (snapshotCategories) snapshotCategories.textContent = String(categoryCounts.size);
+        if (snapshotCities) snapshotCities.textContent = String(cityCounts.size);
+
+        if (categoryTags) {
+            categoryTags.innerHTML = '';
+            if (topCategories.length) {
+                topCategories.slice(0, 4).forEach(([name, count]) => {
+                    const tag = document.createElement('span');
+                    tag.className = 'hero-tag';
+                    tag.textContent = `${name} (${count})`;
+                    categoryTags.appendChild(tag);
+                });
+            } else {
+                const fallback = document.createElement('span');
+                fallback.className = 'hero-tag';
+                fallback.textContent = 'Fresh listings coming in';
+                categoryTags.appendChild(fallback);
+            }
+        }
+
+        if (citySummary) {
+            citySummary.textContent = topCities.length
+                ? `${topCities.map(([city, count]) => `${city} (${count})`).join(', ')} are currently generating the most activity.`
+                : 'Add a few listings with city names to show local hiring momentum here.';
+        }
+
+        if (popularCategories) {
+            popularCategories.innerHTML = '';
+
+            const allLink = document.createElement('a');
+            allLink.className = 'category-chip';
+            allLink.href = 'jobs.html';
+            allLink.textContent = 'Browse all jobs';
+            popularCategories.appendChild(allLink);
+
+            topCategories.forEach(([name, count]) => {
+                const link = document.createElement('a');
+                link.className = 'category-chip';
+                link.href = `jobs.html?search=${encodeURIComponent(name)}`;
+                link.textContent = `${name} (${count})`;
+                popularCategories.appendChild(link);
+            });
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     LayoutManager.ensureNavRight();
     LayoutManager.ensureMobileMenu();
@@ -2747,6 +2831,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ThemeManager.init();
     AuthManager.init();
     await StatsManager.init();
+    await HomePageManager.init();
     await SearchEngine.init();
     FormHandler.init();
     FeedbackHandler.init();

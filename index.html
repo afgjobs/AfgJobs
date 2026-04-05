@@ -36,7 +36,7 @@
   }
   </script>
   <link rel="icon" href="site-icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.min.css">
+  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="site-icon.svg">
   <link rel="canonical" href="https://afgjobs.com/">
@@ -84,19 +84,71 @@
       <div class="mobile-welcome-row">
         <p id="mobile-welcome" class="mobile-welcome-text">Welcome</p>
       </div>
-      <h2 id="hero-title">Find local freelance work across Afghanistan</h2>
-      <p id="hero-lead" class="lead">Browse short-term and freelance gigs posted by local businesses and individuals. Post your own job to reach local freelancers.</p>
-      <div class="hero-actions">
-        <a href="jobs.html" id="hero-browse-btn" class="btn">Browse Jobs</a>
-        <a href="post-job.html" id="hero-post-btn" class="btn outline">Post a Job</a>
-      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">Built for practical hiring across Afghan communities</p>
+          <h2 id="hero-title">Find trusted local freelance work without the usual friction</h2>
+          <p id="hero-lead" class="lead">Browse short-term and freelance gigs posted by local businesses and individuals. Post your own job to reach local freelancers fast, clearly, and directly.</p>
+          <div class="hero-actions">
+            <a href="jobs.html" id="hero-browse-btn" class="btn">Browse Jobs</a>
+            <a href="post-job.html" id="hero-post-btn" class="btn outline">Post a Job</a>
+          </div>
 
-      <div class="quick-search">
-        <div class="search-wrap">
-          <label for="hero-search" class="visually-hidden">Search jobs or categories</label>
-          <input id="hero-search" type="search" placeholder="Quick search jobs or categories (e.g. Web Designer)">
-          <button id="hero-search-btn" class="btn">Search</button>
+          <div class="quick-search">
+            <div class="search-wrap">
+              <label for="hero-search" class="visually-hidden">Search jobs or categories</label>
+              <input id="hero-search" type="search" placeholder="Quick search jobs or categories (e.g. Web Designer)">
+              <button id="hero-search-btn" class="btn">Search</button>
+            </div>
+          </div>
+
+          <div class="hero-proof" aria-label="Highlights">
+            <span class="hero-proof-item">Direct contact with employers</span>
+            <span class="hero-proof-item">Mobile-friendly job posting</span>
+            <span class="hero-proof-item">Designed for local freelance work</span>
+          </div>
+
+          <div class="hero-suggestions" aria-label="Popular searches">
+            <span class="hero-suggestions-label">Try:</span>
+            <a class="hero-suggestion-chip" href="jobs.html?search=Graphic%20Design">Graphic Design</a>
+            <a class="hero-suggestion-chip" href="jobs.html?search=Teaching">Teaching</a>
+            <a class="hero-suggestion-chip" href="jobs.html?search=Delivery">Delivery</a>
+            <a class="hero-suggestion-chip" href="jobs.html?search=WordPress">WordPress</a>
+          </div>
         </div>
+
+        <aside class="hero-panel" aria-label="Market Snapshot">
+          <div class="hero-panel-inner">
+            <p class="hero-panel-kicker">Live market snapshot</p>
+            <h3>See what people are hiring for right now</h3>
+            <div class="hero-panel-stats">
+              <div class="hero-panel-stat">
+                <span class="hero-panel-stat-value" id="snapshot-jobs">0</span>
+                <span class="hero-panel-stat-label">Open jobs</span>
+              </div>
+              <div class="hero-panel-stat">
+                <span class="hero-panel-stat-value" id="snapshot-categories">0</span>
+                <span class="hero-panel-stat-label">Categories</span>
+              </div>
+              <div class="hero-panel-stat">
+                <span class="hero-panel-stat-value" id="snapshot-cities">0</span>
+                <span class="hero-panel-stat-label">Cities</span>
+              </div>
+            </div>
+
+            <div class="hero-panel-block">
+              <p class="hero-panel-label">Popular categories</p>
+              <div id="hero-category-tags" class="hero-tag-list">
+                <span class="hero-tag">Loading...</span>
+              </div>
+            </div>
+
+            <div class="hero-panel-block">
+              <p class="hero-panel-label">Cities with activity</p>
+              <p id="hero-city-summary" class="hero-panel-summary">We are collecting the latest location data from active listings.</p>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -128,6 +180,33 @@
           </div>
           <p class="stat-label">Categories</p>
           <p id="stat-categories" class="stat-value">0</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="discover-section" aria-labelledby="discover-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Discover faster</p>
+          <h3 id="discover-heading">Start with the categories people use most</h3>
+        </div>
+        <p class="section-lead">Popular searches update from your current listings so visitors can jump straight into the work that is actually being posted.</p>
+      </div>
+      <div id="popular-category-chips" class="category-chip-grid">
+        <a href="jobs.html" class="category-chip">Browse all jobs</a>
+      </div>
+      <div class="audience-grid">
+        <article class="audience-card">
+          <p class="audience-label">For job seekers</p>
+          <h4>Build visibility even before someone posts the perfect job</h4>
+          <p>Use the profile form below to share your skills, city, and contact details so employers can find you directly.</p>
+          <a href="#seeker-form" class="btn outline">Post your profile</a>
+        </article>
+        <article class="audience-card">
+          <p class="audience-label">For employers</p>
+          <h4>Get responses from local freelancers without extra steps</h4>
+          <p>Publish a clear brief, budget, and contact method. Candidates can reach you by phone or email right away.</p>
+          <a href="post-job.html" class="btn">Create a listing</a>
         </article>
       </div>
     </section>
