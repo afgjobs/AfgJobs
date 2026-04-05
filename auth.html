@@ -65,6 +65,8 @@
       gap: 0;
       margin-bottom: 2rem;
       border-bottom: 2px solid var(--border);
+      position: relative;
+      z-index: 1;
     }
 
     .auth-tab {
@@ -79,6 +81,8 @@
       font-size: 0.95rem;
       border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
+      position: relative;
+      z-index: 2;
     }
 
     .auth-tab.active {
@@ -309,8 +313,8 @@
       </div>
 
       <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Sign In</button>
-        <button class="auth-tab" data-tab="signup">Sign Up</button>
+        <button type="button" class="auth-tab active" data-tab="login">Sign In</button>
+        <button type="button" class="auth-tab" data-tab="signup">Sign Up</button>
       </div>
 
       <!-- LOGIN FORM -->
@@ -418,6 +422,9 @@
     // Tab switching
     function switchTab(tabName, event) {
       if (event) event.preventDefault();
+      const targetTab = document.querySelector(`.auth-tab[data-tab="${tabName}"]`);
+      const targetForm = document.getElementById(`${tabName}-form`);
+      if (!targetTab || !targetForm) return;
       
       document.querySelectorAll('.auth-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -426,12 +433,12 @@
         form.classList.remove('active');
       });
 
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-      document.getElementById(`${tabName}-form`).classList.add('active');
+      targetTab.classList.add('active');
+      targetForm.classList.add('active');
     }
 
     document.querySelectorAll('.auth-tab').forEach(tab => {
-      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+      tab.addEventListener('click', (event) => switchTab(tab.dataset.tab, event));
     });
 
     // Validation functions
